@@ -1,1 +1,2 @@
 - [pnpm AI integration setup](pnpm-ai-integrations.md) — install after wiring copied integration packages, before typecheck or codegen.
+- [Mission scope](mission-scope.md) — keep the experience focused on deadline planning, countdown lock screens, and optional reminders.

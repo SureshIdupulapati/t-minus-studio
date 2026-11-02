@@ -4,7 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import { Route, Switch, useLocation, Router as WouterRouter, Link } from 'wouter';
+import { Redirect, Route, Switch, useLocation, Router as WouterRouter, Link } from 'wouter';
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Copy, Download, FileImage, FileJson, Flame, FolderOpen, ImagePlus, LayoutDashboard, ListChecks, Menu, Moon, MoreHorizontal, Plus, Search, Settings2, Sparkles, Sun, Trash2, Upload, X } from 'lucide-react';
 import { getHealthCheckQueryKey, useGeneratePlan, useHealthCheck } from '@workspace/api-client-react';
 import type { PlanInput, PlanMilestone, PlanResponse } from '@workspace/api-client-react';
@@ -193,7 +193,6 @@ function AppContent() {
   const navItems = [
     { href: '/', label: 'Overview', icon: LayoutDashboard }, { href: '/plan', label: 'Milestone plan', icon: ListChecks },
     { href: '/designer', label: 'Lock-screen studio', icon: FileImage }, { href: '/reminders', label: 'Reminders', icon: Bell },
-    { href: '/projects', label: 'Projects', icon: FolderOpen }, { href: '/submission', label: 'Handshake kit', icon: ArrowUpRight },
   ];
   const titleForPage = navItems.find(n => n.href === location)?.label || 'T-Minus Studio';
   const pickActive = (id: string) => { setActiveId(id); setMobileOpen(false); };
@@ -504,11 +503,8 @@ function AppContent() {
           {page === 'plan' && <PlanPage project={activeProject} milestones={activeMilestones} onAdd={addMilestone} onTask={toggleTask} onAddTask={addTask} onRemove={removeMilestone} onEditMilestone={editMilestone} onDate={changeMilestoneDate} onEdit={() => activeProject && openEdit(activeProject)} onNew={openNew} onMove={moveMilestone} showCompleted={showCompleted} setShowCompleted={setShowCompleted} />}
           {page === 'designer' && <Designer project={activeProject} onPatch={patchDesign} onExport={handleWallpaperExport} onUploadClick={() => uploadRef.current?.click()} onClearImage={() => patchDesign({ image: undefined })} onNew={openNew} uploadRef={uploadRef} onUpload={onUpload} onReset={() => { patchDesign(defaultDesign()); setToast('Design reset.'); }} onSave={() => setToast('Design saved on this device.')} />}
           {page === 'reminders' && <Reminders project={activeProject} onPatch={patchActive} onAsk={askNotifications} permission={notificationPermission} onCalendar={exportCalendar} onNew={openNew} />}
-          {page === 'projects' && <ProjectsPage projects={projects} search={search} setSearch={setSearch} showArchived={showArchived} setShowArchived={setShowArchived} activeId={activeId} onNew={openNew} onPick={pickActive} onEdit={openEdit} onDuplicate={duplicateProject} onDelete={deleteProject} onArchive={project => { setProjects(p => p.map(x => x.id === project.id ? { ...x, archived: !x.archived } : x)); setToast(project.archived ? 'Project restored.' : 'Project archived.'); }} onExport={exportJSON} onImport={() => importRef.current?.click()} />}
-          {page === 'submission' && <Submission project={activeProject} onPatch={patchActive} checks={activeProject?.submissionChecks || [false, false, false, false, false]} setChecks={checks => patchActive({ submissionChecks: checks })} onCover={handleCoverExport} onWallpaper={handleWallpaperExport} onDesignPatch={patchDesign} onExportJSON={() => exportJSON()} onNew={openNew} onToast={setToast} />}
         </main>
       </div>
-      <input ref={importRef} type="file" accept="application/json,.json" hidden onChange={e => { importJSON(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       {modal && <ProjectModal key={`${modal}-${editingId}`} mode={modal} project={projects.find(p => p.id === editingId)} loading={generatePlan.isPending} onClose={() => setModal(null)} onSubmit={startProject} />}
       {toast && <div className="toast-message" role="status">{toast}</div>}
     </div>
@@ -544,7 +540,7 @@ function Overview({ project, projects, onNew, onTask, onSetActive, onEdit, onCal
       </section>
       <section className="card"><div className="card-head"><div><h2 className="card-title">A small ritual</h2><div className="section-note">Make the goal visible on ordinary days.</div></div><Flame size={19} color="hsl(var(--accent))" /></div><p style={{ font: '19px/1.35 var(--app-font-serif)', margin: '10px 0 17px' }}>“What is the smallest honest step I can take today?”</p><div className="tool-row"><Link className="btn small secondary" href="/designer">Design a lock screen <ArrowRight /></Link><button className="btn small secondary" onClick={onCalendar}><CalendarDays /> Save calendar</button></div></section>
     </div>
-    {projects.filter(p => !p.archived).length > 1 && <><div className="section-head"><div><h2 className="section-title">In your orbit</h2><div className="section-note">Choose the goal you want to hold close today.</div></div><Link className="text-button" href="/projects">All projects <ArrowRight size={14} /></Link></div><div className="project-grid">{projects.filter(p => !p.archived && p.id !== project.id).slice(0, 2).map(p => <button key={p.id} className="card project-card" style={{ textAlign: 'left', color: 'inherit' }} onClick={() => onSetActive(p.id)}><div className="project-meta"><span className="tag">{daysLeft(p)} days left</span><ArrowUpRight size={16} /></div><div className="project-title">{p.title}</div><div className="project-desc">{p.description}</div></button>)}</div></>}
+    {projects.filter(p => !p.archived).length > 1 && <><div className="section-head"><div><h2 className="section-title">Your other goals</h2><div className="section-note">Choose the goal you want to focus on today.</div></div></div><div className="project-grid">{projects.filter(p => !p.archived && p.id !== project.id).map(p => <button key={p.id} className="card project-card" style={{ textAlign: 'left', color: 'inherit' }} onClick={() => onSetActive(p.id)}><div className="project-meta"><span className="tag">{daysLeft(p)} days left</span><ArrowUpRight size={16} /></div><div className="project-title">{p.title}</div><div className="project-desc">{p.description}</div></button>)}</div></>}
   </>;
 }
 
@@ -862,8 +858,8 @@ function Router() {
     <Route path="/plan" component={() => <AppContent />} />
     <Route path="/designer" component={() => <AppContent />} />
     <Route path="/reminders" component={() => <AppContent />} />
-    <Route path="/projects" component={() => <AppContent />} />
-    <Route path="/submission" component={() => <AppContent />} />
+    <Route path="/projects" component={() => <Redirect to="/" replace />} />
+    <Route path="/submission" component={() => <Redirect to="/" replace />} />
     <Route component={NotFound} />
   </Switch></RoutedErrorBoundary>;
 }
