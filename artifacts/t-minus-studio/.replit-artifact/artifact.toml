@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "T-Minus Studio"
+description = "A deadline planning studio that turns goals into milestone roadmaps, customizable countdown wallpapers, reminders, and submission-ready showcase assets."
+version = "1.0.0"
+id = "artifacts/t-minus-studio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23222
+
+[services.development]
+run = "pnpm --filter @workspace/t-minus-studio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/t-minus-studio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/t-minus-studio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23222"
+BASE_PATH = "/"

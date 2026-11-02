@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: planning
+    description: Gemini-powered deadline planning
 paths:
   /healthz:
     get:
@@ -24,6 +26,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /plan:
+    post:
+      operationId: generatePlan
+      tags: [planning]
+      summary: Generate a deadline milestone plan
+      description: Uses Gemini to create a practical, deadline-aware milestone roadmap.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanInput"
+      responses:
+        "200":
+          description: Generated milestone plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanResponse"
+        "400":
+          description: Invalid deadline planning request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Gemini planning is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +66,92 @@ components:
           type: string
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    PlanInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        deadline:
+          type: string
+          format: date-time
+        availableHoursPerDay:
+          type: number
+          minimum: 0.25
+          maximum: 24
+        unavailableDays:
+          type: array
+          items:
+            type: string
+            enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        started:
+          type: boolean
+        remainingTasks:
+          type: string
+          maxLength: 3000
+        timezone:
+          type: string
+      required:
+        - title
+        - description
+        - deadline
+        - availableHoursPerDay
+        - unavailableDays
+        - started
+        - remainingTasks
+        - timezone
+    PlanTask:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        completed:
+          type: boolean
+      required: [id, title, completed]
+    PlanMilestone:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        tMinus:
+          type: string
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanTask"
+        priority:
+          type: string
+          enum: [low, medium, high]
+        completed:
+          type: boolean
+      required: [id, title, tMinus, date, description, tasks, priority, completed]
+    PlanResponse:
+      type: object
+      properties:
+        summary:
+          type: string
+        milestones:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanMilestone"
+      required: [summary, milestones]
 

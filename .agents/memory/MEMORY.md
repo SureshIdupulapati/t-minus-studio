@@ -1,0 +1,1 @@
+- [pnpm AI integration setup](pnpm-ai-integrations.md) — install after wiring copied integration packages, before typecheck or codegen.
