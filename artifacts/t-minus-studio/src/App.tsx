@@ -32,7 +32,7 @@ type ModalMode = 'create' | 'edit' | null;
 
 const queryClient = new QueryClient();
 const STORE = 't-minus-studio-projects-v1';
-const THEME = 't-minus-studio-theme';
+const THEME = 't-minus-studio-colossal-theme';
 const PAGE_META: Record<string, { title: string; description: string }> = {
   '/': { title: 'Your deadline, at a glance', description: 'Choose a deadline, track your progress, and see the next action toward your goal.' },
   '/plan': { title: 'Your milestone plan', description: 'Work backward from your deadline with an editable Gemini-assisted milestone plan.' },
@@ -140,7 +140,7 @@ function AppContent() {
   const [location, setLocation] = useLocation();
   const [projects, setProjects] = useState<Project[]>(loadProjects);
   const [activeId, setActiveId] = useState<string>(() => loadProjects()[0]?.id ?? '');
-  const [dark, setDark] = useState(() => localStorage.getItem(THEME) === 'dark');
+  const [dark, setDark] = useState(() => localStorage.getItem(THEME) !== 'light');
   const [modal, setModal] = useState<ModalMode>(null);
   const [editingId, setEditingId] = useState('');
   const [menuId, setMenuId] = useState('');
@@ -499,25 +499,15 @@ function AppContent() {
   const activeMilestones = useMemo(() => activeProject?.milestones || [], [activeProject]);
 
   return (
-    <div className="app-shell">
-      <aside className={`sidebar ${mobileOpen ? 'open' : ''}`} aria-label="Primary navigation">
-        <div className="brand"><div className="brand-mark" aria-hidden="true" /><div><div className="brand-name">T—Minus</div><div className="brand-caption">A personal deadline studio</div></div></div>
-        <div className="nav-label">Your studio</div>
-        <nav className="nav-list">{navItems.map(item => {
-          const Icon = item.icon;
-          return <Link key={item.href} href={item.href} className={`nav-link ${location === item.href ? 'active' : ''}`} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.href.slice(1) || 'overview'}`}><Icon /><span>{item.label}</span></Link>;
-        })}</nav>
-        <div className="sidebar-bottom">
-          {activeProject && <div className="focus-card"><div className="focus-tag">Currently in motion</div><div className="focus-copy">{activeProject.title}</div><div className="focus-meter"><i style={{ width: `${calcProgress(activeProject)}%` }} /></div></div>}
-          <div className="sidebar-footer"><div className="avatar">TM</div><div><div style={{ fontWeight: 600 }}>Your studio</div><div style={{ opacity: .55, fontSize: 10 }}>Saved on this device</div></div></div>
-        </div>
-      </aside>
+    <div className="app-shell colossal-shell">
       <div className="content-wrap">
-        <header className="topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><button className="icon-btn mobile-menu" aria-label="Open navigation" onClick={() => setMobileOpen(!mobileOpen)}><Menu /></button><div className="crumb">{titleForPage}</div></div>
-          <div className="top-actions"><span className="crumb" style={{ textTransform: 'none', letterSpacing: 0, fontFamily: 'var(--app-font-sans)' }}>{health.data?.status === 'ok' ? 'Studio connected' : health.isError ? 'Plan assist offline' : 'Local-first workspace'}</span><button className="icon-btn" onClick={() => setDark(!dark)} aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} data-testid="button-theme"><span>{dark ? <Sun /> : <Moon />}</span></button></div>
+        <header className="topbar colossal-header">
+          <Link href="/" className="colossal-brand" aria-label="T-Minus Studio overview">T—MINUS STUDIO —<br />YOUR DEADLINE. YOUR DESIGN.<span className="colossal-connection">{health.data?.status === 'ok' ? 'Gemini assist connected' : health.isError ? 'Plan assist offline' : 'Local-first workspace'}</span></Link>
+          <button className="icon-btn mobile-menu" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} aria-controls="studio-navigation" onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X /> : <Menu />}</button>
+          <nav id="studio-navigation" className={`colossal-nav ${mobileOpen ? 'open' : ''}`} aria-label="Primary navigation">{navItems.map(item => <Link key={item.href} href={item.href} className={location === item.href ? 'active' : ''} aria-current={location === item.href ? 'page' : undefined} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.href.slice(1) || 'overview'}`}>{item.label}</Link>)}</nav>
+          <button className="icon-btn colossal-theme" onClick={() => setDark(!dark)} aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} data-testid="button-theme">{dark ? <Sun /> : <Moon />}</button>
         </header>
-        <main className="main">
+        <main className={`main page-${page} ${!activeProject ? 'is-empty' : ''}`} aria-label={titleForPage}>
           {page === 'overview' && <Overview project={activeProject} projects={projects} onNew={openNew} onTask={toggleTask} onSetActive={pickActive} onEdit={openEdit} onCalendar={exportCalendar} />}
           {page === 'plan' && <PlanPage project={activeProject} milestones={activeMilestones} onAdd={addMilestone} onTask={toggleTask} onAddTask={addTask} onRemove={removeMilestone} onEditMilestone={editMilestone} onDate={changeMilestoneDate} onEdit={() => activeProject && openEdit(activeProject)} onNew={openNew} onMove={moveMilestone} showCompleted={showCompleted} setShowCompleted={setShowCompleted} />}
           {page === 'designer' && <Designer project={activeProject} onPatch={patchDesign} onExport={handleWallpaperExport} onUploadClick={() => uploadRef.current?.click()} onClearImage={() => patchDesign({ image: undefined })} onNew={openNew} uploadRef={uploadRef} onUpload={onUpload} onReset={() => { patchDesign(defaultDesign()); setToast('Design reset.'); }} onSave={() => setToast('Design saved on this device.')} />}

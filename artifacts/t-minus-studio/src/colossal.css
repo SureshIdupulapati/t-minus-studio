@@ -1,0 +1,126 @@
+/* Graduated from the selected Northbound canvas design. Wallpaper artwork keeps its own palette. */
+:root {
+  --background:0 0% 100%;--foreground:0 0% 0%;--card:0 0% 98%;--card-foreground:0 0% 0%;
+  --popover:0 0% 100%;--popover-foreground:0 0% 0%;--primary:0 0% 0%;--primary-foreground:0 0% 100%;
+  --secondary:0 0% 92%;--secondary-foreground:0 0% 0%;--muted:0 0% 93%;--muted-foreground:0 0% 38%;
+  --accent:0 0% 12%;--accent-foreground:0 0% 100%;--border:0 0% 80%;--input:0 0% 70%;--ring:0 0% 20%;
+  --sidebar:0 0% 0%;--sidebar-foreground:0 0% 100%;--plum:0 0% 25%;--sky:0 0% 30%;--apricot:0 0% 95%;
+  --app-font-sans:'Inter',Arial,sans-serif;--app-font-serif:'Inter',Arial,sans-serif;
+  --radius:0rem;--shadow-soft:none;
+}
+.dark {
+  --background:0 0% 0%;--foreground:0 0% 100%;--card:0 0% 4%;--card-foreground:0 0% 100%;
+  --popover:0 0% 5%;--popover-foreground:0 0% 100%;--primary:0 0% 100%;--primary-foreground:0 0% 0%;
+  --secondary:0 0% 12%;--secondary-foreground:0 0% 100%;--muted:0 0% 10%;--muted-foreground:0 0% 65%;
+  --accent:0 0% 90%;--accent-foreground:0 0% 0%;--border:0 0% 22%;--input:0 0% 35%;--ring:0 0% 90%;
+  --sidebar:0 0% 0%;--sidebar-foreground:0 0% 100%;--plum:0 0% 75%;--sky:0 0% 75%;--apricot:0 0% 0%;
+}
+body{background:hsl(var(--background));background-image:linear-gradient(hsl(var(--foreground)/.025) 1px,transparent 1px),linear-gradient(90deg,hsl(var(--foreground)/.025) 1px,transparent 1px);background-size:80px 80px}
+body:after{display:none}
+.colossal-shell{display:block}
+.colossal-header{position:relative;z-index:20;height:112px;padding:36px 40px 20px;display:flex;align-items:flex-start;gap:30px;border:0;background:transparent;backdrop-filter:none}
+.colossal-brand{color:inherit;text-decoration:none;font-size:10px;font-weight:700;letter-spacing:.18em;line-height:1.6;flex:1}
+.colossal-connection{display:block;font-size:8px;font-weight:500;letter-spacing:.12em;color:hsl(var(--muted-foreground));margin-top:5px;text-transform:uppercase}
+.colossal-nav{display:flex;gap:clamp(18px,4vw,64px);padding-top:3px}
+.colossal-nav a{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:inherit;padding-bottom:8px;white-space:nowrap;border-bottom:1px solid transparent;transition:opacity .2s}
+.colossal-nav a:hover{opacity:.55}
+.colossal-nav a.active{border-bottom-color:currentColor}
+.colossal-theme{width:28px;height:28px;margin-top:-3px;border-color:hsl(var(--border));flex:none}
+.colossal-theme svg{width:13px;height:13px}
+.colossal-shell .main{max-width:1520px;padding:30px 40px 80px;--page-tint:var(--foreground)}
+.colossal-shell .main.is-empty{max-width:none;padding:0 40px}
+.colossal-start{min-height:calc(100svh - 112px);display:flex;flex-direction:column;justify-content:space-between;gap:26px;padding:34px 0 34px}
+.colossal-type{margin:0;font-weight:900;font-size:clamp(96px,20vw,318px);letter-spacing:-.075em;line-height:.78;text-transform:uppercase;display:flex;flex-direction:column;flex:1;justify-content:center;gap:.055em}
+.colossal-type span{display:block;white-space:nowrap}
+.colossal-type span:first-child{align-self:flex-start}
+.colossal-type span:last-child{align-self:flex-end}
+.colossal-overview .colossal-type span:last-child{font-size:1.23em}
+.colossal-plan .colossal-type{font-size:clamp(90px,17.4vw,320px)}
+.colossal-designer .colossal-type{font-size:clamp(90px,21.5vw,350px)}
+.colossal-reminders .colossal-type{font-size:clamp(90px,19.5vw,320px)}
+.colossal-manifesto{display:grid;grid-template-columns:1fr minmax(260px,460px) 144px;align-items:end;gap:clamp(24px,5vw,80px)}
+.colossal-footnote,.colossal-index{font-size:10px;font-weight:700;letter-spacing:.15em;line-height:1.6;text-transform:uppercase}
+.colossal-footnote span{display:block;margin-top:8px;font-weight:500;font-size:8px;letter-spacing:.1em;color:hsl(var(--muted-foreground))}
+.colossal-intro p{font-size:clamp(17px,1.6vw,22px);line-height:1.4;font-weight:600;letter-spacing:-.035em;margin:0}
+.colossal-intro>span{display:block;margin-top:14px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:hsl(var(--muted-foreground))}
+.colossal-circle{width:144px;height:144px;border-radius:50%;background:hsl(var(--foreground));color:hsl(var(--background));border:1px solid hsl(var(--foreground));display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;line-height:1.5;letter-spacing:.1em;transition:transform .2s,background .2s}
+.colossal-circle svg{margin-top:10px}
+.colossal-circle:hover{transform:scale(1.05)}
+.colossal-circle:focus-visible,.colossal-nav a:focus-visible,.colossal-brand:focus-visible{outline:2px solid hsl(var(--foreground));outline-offset:7px}
+.colossal-detail{margin:50px 0 0;padding:65px 0 80px;border-top:1px solid hsl(var(--border));display:grid;grid-template-columns:1fr 1fr;gap:10vw;align-items:center}
+.colossal-detail h2{font-size:clamp(28px,3.5vw,54px);line-height:1.02;letter-spacing:-.055em;margin:28px 0;font-weight:800;max-width:540px}
+.colossal-detail ol{list-style:none;padding:0;margin:0}
+.colossal-detail li{display:flex;gap:25px;border-top:1px solid hsl(var(--border));padding:20px 0}
+.colossal-detail li>span{font-size:10px;color:hsl(var(--muted-foreground))}
+.colossal-detail strong{font-size:14px;font-weight:600}
+.colossal-detail li p{font-size:12px;color:hsl(var(--muted-foreground));margin:7px 0 0;line-height:1.6}
+.colossal-disclaimer{font-size:10px;color:hsl(var(--muted-foreground));line-height:1.6}
+.colossal-detail-preview{min-width:0;--ps-tint:var(--foreground)}
+.colossal-detail-preview .ps-ticket{background:hsl(var(--foreground));color:hsl(var(--background));border-radius:0;box-shadow:none}
+.colossal-detail-preview .ps-ticket:before{display:none}
+.colossal-detail-preview .ps-rhythm,.colossal-detail-preview .ps-ladder{border-radius:0;box-shadow:none;background:hsl(var(--card));border:1px solid hsl(var(--border))}
+.colossal-detail-preview .ps-ladder{position:relative}
+.colossal-detail-preview .ps-num{border-radius:0}
+.colossal-detail-preview .ps-label,.colossal-detail-preview .ps-rhythm .ps-label{color:hsl(var(--muted-foreground))}
+.colossal-detail-preview .ps-label.light{color:inherit;opacity:.65}
+.colossal-shell .main>.eyebrow{border-radius:0;background:none;padding:0;font-size:10px;color:hsl(var(--muted-foreground))}
+.main>.eyebrow:before{display:none}
+.colossal-shell .page-title{font-size:clamp(36px,6vw,86px);font-weight:900;letter-spacing:-.065em;line-height:.98;text-transform:uppercase;max-width:1100px}
+.colossal-shell .section-title{font-weight:700;letter-spacing:-.045em}
+.colossal-shell .section-head{border-bottom-style:solid}
+.colossal-shell .btn{border-radius:0;box-shadow:none;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:13px 18px}
+.colossal-shell .btn.terracotta{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+.colossal-shell .card,.colossal-shell .stat-panel,.colossal-shell .hero-panel,.colossal-shell .milestone-row,.colossal-shell .empty-state,.colossal-shell .alert,.colossal-shell .project-card{border-radius:0;box-shadow:none;background:hsl(var(--card))}
+.colossal-shell .hero-panel{color:hsl(var(--foreground));border:1px solid hsl(var(--border));min-height:340px}
+.colossal-shell .hero-panel:before,.colossal-shell .hero-panel:after{display:none}
+.colossal-shell .stat-panel:first-child,.colossal-shell .stat-panel:nth-child(2){background:hsl(var(--card))}
+.colossal-shell .checklist-item{border-radius:0;background:transparent;border-bottom:1px solid hsl(var(--border))}
+.colossal-shell .timeline:before{background:hsl(var(--border))}
+.colossal-shell .milestone-row{background:transparent}
+.colossal-shell .mile-title{font-weight:700}
+.colossal-shell .field input,.colossal-shell .field textarea,.colossal-shell .field select,.colossal-shell .search-input,.colossal-shell .day-chip{border-radius:0}
+.colossal-shell .preview-stage{border-radius:0;background-image:linear-gradient(hsl(var(--foreground)/.05) 1px,transparent 1px),linear-gradient(90deg,hsl(var(--foreground)/.05) 1px,transparent 1px);background-size:32px 32px;background-color:hsl(var(--background))}
+.colossal-shell .control-panel{top:20px}
+.colossal-shell .tag{border-radius:0}
+.colossal-shell .alert{border-left-color:hsl(var(--foreground))}
+.colossal-shell .modal{border-radius:0;border-top:1px solid hsl(var(--foreground));box-shadow:0 0 0 100vmax rgba(0,0,0,.15)}
+.colossal-shell .modal-title{font-size:28px;font-weight:800;letter-spacing:-.055em}
+.colossal-shell .toast-message{background:hsl(var(--foreground));color:hsl(var(--background));border-radius:0}
+.wallpaper,.cover-preview{--app-font-serif:'Fraunces',Georgia,serif}
+@media(min-width:1600px){.colossal-start{max-width:1600px;margin:auto}.colossal-type{font-size:318px}}
+@media(max-width:1000px){
+  .colossal-header{padding:28px 28px 16px;height:104px;gap:22px}
+  .colossal-nav{gap:20px}.colossal-nav a{font-size:9px;letter-spacing:.08em}
+  .colossal-shell .main,.colossal-shell .main.is-empty{padding-left:28px;padding-right:28px}
+  .colossal-start{min-height:calc(100svh - 104px)}
+  .colossal-manifesto{grid-template-columns:1fr minmax(220px,1.5fr) 112px;gap:25px}
+  .colossal-circle{width:112px;height:112px;font-size:10px}
+}
+@media(max-width:700px){
+  .colossal-header{height:102px;padding:25px 20px;align-items:flex-start;gap:15px}
+  .colossal-brand{font-size:8px;letter-spacing:.13em}
+  .colossal-connection{font-size:7px;margin-top:4px}
+  .colossal-header .mobile-menu{display:grid;width:30px;height:30px;order:2}
+  .colossal-theme{margin-top:0;width:30px;height:30px}
+  .colossal-nav{display:none;position:absolute;top:90px;left:20px;right:20px;padding:24px;background:hsl(var(--background));border:1px solid hsl(var(--border));z-index:30}
+  .colossal-nav.open{display:flex;flex-direction:column;gap:24px}
+  .colossal-nav a{font-size:12px;padding-bottom:12px}
+  .colossal-shell .main,.colossal-shell .main.is-empty{padding-left:20px;padding-right:20px}
+  .colossal-start{min-height:calc(100svh - 102px);padding:30px 0;gap:40px}
+  .colossal-type{font-size:19.4vw;letter-spacing:-.08em;gap:.1em;flex:none;margin-top:25px}
+  .colossal-overview .colossal-type span:last-child{font-size:1.23em}
+  .colossal-plan .colossal-type{font-size:17.4vw}
+  .colossal-designer .colossal-type{font-size:21vw}
+  .colossal-reminders .colossal-type{font-size:18.6vw}
+  .colossal-manifesto{grid-template-columns:1fr 102px;gap:30px 20px}
+  .colossal-intro{grid-column:1/-1;grid-row:1;max-width:340px}
+  .colossal-intro p{font-size:20px;line-height:1.45}
+  .colossal-intro>span{font-size:8px}
+  .colossal-footnote{font-size:8px;line-height:1.7}
+  .colossal-circle{width:102px;height:102px;font-size:9px}
+  .colossal-detail{grid-template-columns:1fr;gap:40px;padding:40px 0 60px;margin-top:20px}
+  .colossal-shell .page-title{font-size:clamp(35px,10vw,68px)!important}
+  .colossal-shell .main{padding-top:24px}
+  .colossal-shell .main.is-empty{padding-top:0}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.colossal-shell *{animation:none!important;transition:none!important}}

@@ -14,3 +14,9 @@ Each core page must have its own clear title and purpose-specific starting scree
 **Why:** The user reported that every page looked the same and explicitly asked to change the titles and UI.
 
 **How to apply:** Do not route all no-goal states to the same generic onboarding screen. Keep Overview, planning, lock-screen design, and reminders visually and functionally distinguishable.
+
+The user selected the Colossal Typographic Landing canvas reference and asked to integrate it faithfully into T-Minus Studio.
+
+**Why:** This is an explicit visual direction, replacing the previous warm green editorial look.
+
+**How to apply:** Preserve the reference's black-and-white presentation, oversized heavy typography, horizontal navigation, subtle grid, and circular primary action. Keep T-Minus branding and actual deadline-planning functions, not the reference agency's identity or placeholder links.

@@ -1,19 +1,28 @@
 import { useState } from 'react';
-import { ArrowRight, Bell, CalendarDays, Flag, Monitor, Plus, Smartphone, Sparkles } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, Monitor, Smartphone } from 'lucide-react';
 import './page-start.css';
 
 type Page = 'overview' | 'plan' | 'designer' | 'reminders';
 
-const COPY: Record<Page, { eyebrow: string; title: string; lede: string; cta: string }> = {
-  overview: { eyebrow: 'Start here', title: 'Your deadline, at a glance', lede: 'Name the thing that matters and the date it is due. T-Minus turns that single line into a calm home base you can return to.', cta: 'Define my deadline' },
-  plan: { eyebrow: 'Work backward', title: 'Build your milestone plan', lede: 'Begin at the finish line and walk back to today. Gemini drafts checkpoints around the hours you actually have; you edit everything.', cta: 'Start a goal to plan' },
-  designer: { eyebrow: 'Make it visible', title: 'Design your countdown', lede: 'Bring your deadline and next milestones onto your phone or computer. Choose a style, then download a PNG snapshot of your countdown.', cta: 'Create a goal to design for' },
-  reminders: { eyebrow: 'A nudge, never a nag', title: 'Set your reminder rhythm', lede: 'Optional check-ins while the app is open, plus a calendar file so your own calendar can carry the milestones.', cta: 'Start a goal first' },
+const COPY: Record<Page, { eyebrow: string; title: string; lede: string; cta: string; steps: [string, string][] }> = {
+  overview: { eyebrow: 'Start here', title: 'Your deadline, at a glance', lede: 'Name the thing that matters and the date it is due. T-Minus turns that single line into a home base you can return to.', cta: 'Define my deadline',
+    steps: [['Name it', 'One goal, one date, your time zone.'], ['Plan it', 'Milestones counted back from the deadline.'], ['See it', 'A countdown wallpaper for every day.']] },
+  plan: { eyebrow: 'Work backward', title: 'Build your milestone plan', lede: 'Begin at the finish line and walk back to today. Gemini drafts checkpoints around the hours you actually have; you edit everything.', cta: 'Start a goal to plan',
+    steps: [['Set capacity', 'Hours per day and rest days.'], ['Draft with Gemini', 'Or start from a simple timeline.'], ['Edit freely', 'Rename, re-date, reorder, check off.']] },
+  designer: { eyebrow: 'Make it visible', title: 'Design your countdown', lede: 'Bring your deadline and next milestones onto your phone or computer. Choose a style, then download a PNG snapshot.', cta: 'Create a goal to design for',
+    steps: [['Pick a format', 'Phone, computer, or custom size.'], ['Style it', 'Templates, colors, your own photo.'], ['Download PNG', 'A static snapshot, not a live timer.']] },
+  reminders: { eyebrow: 'A nudge, never a nag', title: 'Set your reminder rhythm', lede: 'Optional check-ins while the app is open, plus a calendar file so your own calendar can carry the milestones.', cta: 'Start a goal first',
+    steps: [['Choose beats', 'Daily, weekly, or milestone days.'], ['Allow the browser', 'Check-ins need this tab open.'], ['Export .ics', 'Your calendar handles the rest.']] },
 };
 
 function Overview() {
-  const steps = [['01', 'Name it', 'One goal, one date.'], ['02', 'Plan it', 'Milestones from the deadline back.'], ['03', 'See it', 'A countdown on your lock screen.']];
-  return <div className="ps-flow">{steps.map(([n, t, d], i) => <div className="ps-step" key={n} style={{ ['--i' as string]: i }}><span className="ps-num">{n}</span><strong>{t}</strong><small>{d}</small></div>)}</div>;
+  return <div className="ps-ticket" aria-label="Preview of an overview card">
+    <span className="ps-label light">Preview · your goal goes here</span>
+    <div className="ps-ticket-title">Your goal</div>
+    <div className="ps-ticket-count">{['days', 'hrs', 'min', 'sec'].map(u => <span key={u}><b>--</b><small>{u}</small></span>)}</div>
+    <div className="ps-ticket-bar"><i /></div>
+    <div className="ps-ticket-foot"><span>Next checkpoint</span><span>Progress</span></div>
+  </div>;
 }
 
 function Plan() {
@@ -39,15 +48,19 @@ function Reminders() {
 
 export default function PageStart({ page, onNew }: { page: Page; onNew: () => void }) {
   const c = COPY[page];
-  const Icon = page === 'plan' ? Flag : page === 'reminders' ? Bell : page === 'designer' ? Smartphone : Sparkles;
-  return <section className={`ps ps-${page}`} data-testid={`page-start-${page}`}>
-    <div className="ps-copy">
-      <div className="eyebrow ps-eyebrow"><Icon size={13} /> {c.eyebrow}</div>
-      <h1 className="ps-title" data-testid={`text-title-${page}`}>{c.title}</h1>
-      <p className="ps-lede">{c.lede}</p>
-      <button className="btn ps-cta" data-testid={`button-new-goal-${page}`} onClick={onNew}><Plus /> {c.cta} <ArrowRight /></button>
-      <p className="ps-note">Nothing is saved until you create a goal.</p>
-    </div>
-    <div className="ps-visual">{page === 'overview' ? <Overview /> : page === 'plan' ? <Plan /> : page === 'designer' ? <Designer /> : <Reminders />}</div>
-  </section>;
+  const words = { overview: ['T—MINUS', 'STUDIO'], plan: ['WORK', 'BACKWARD'], designer: ['MAKE IT', 'VISIBLE'], reminders: ['STAY', 'ON TRACK'] }[page];
+  return <>
+    <section className={`colossal-start colossal-${page}`} data-testid={`page-start-${page}`}>
+      <h1 className="colossal-type" data-testid={`text-title-${page}`} aria-label={page === 'overview' ? 'T-Minus Studio — Your deadline, at a glance' : c.title}><span>{words[0]}</span><span>{words[1]}</span></h1>
+      <div className="colossal-manifesto">
+        <div className="colossal-footnote">ONE GOAL.<br />ONE DEADLINE.<br />BUILT AROUND YOU.<br /><span>Saved on this device</span></div>
+        <div className="colossal-intro"><p>{page === 'overview' ? 'Turn a deadline into a plan. Make it your lock screen. Keep the next step in sight.' : c.lede}</p><span>{c.eyebrow} / T—MINUS STUDIO</span></div>
+        <button className="colossal-circle" data-testid={`button-new-goal-${page}`} onClick={onNew} aria-label={c.cta}><span>{page === 'overview' ? 'START A' : 'CREATE A'}</span><span>GOAL</span><ArrowRight size={18} aria-hidden="true" /></button>
+      </div>
+    </section>
+    <section className="colossal-detail" aria-label={`${c.title} preview`}>
+      <div className="colossal-detail-copy"><span className="colossal-index">0{['overview', 'plan', 'designer', 'reminders'].indexOf(page) + 1} / {c.eyebrow}</span><h2>{c.title}.</h2><ol>{c.steps.map(([title, detail], i) => <li key={title}><span>0{i + 1}</span><div><strong>{title}</strong><p>{detail}</p></div></li>)}</ol><p className="colossal-disclaimer">Preview only. Create a goal to save your settings.</p></div>
+      <div className={`colossal-detail-preview ps-${page}`}>{page === 'overview' ? <Overview /> : page === 'plan' ? <Plan /> : page === 'designer' ? <Designer /> : <Reminders />}</div>
+    </section>
+  </>;
 }
