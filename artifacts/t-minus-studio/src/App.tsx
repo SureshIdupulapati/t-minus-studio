@@ -10,10 +10,12 @@ import { Redirect, Route, Switch, useLocation, Router as WouterRouter, Link } fr
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Copy, Download, FileImage, FileJson, Flame, FolderOpen, ImagePlus, LayoutDashboard, ListChecks, Menu, Moon, MoreHorizontal, Plus, Search, Settings2, Sparkles, Sun, Trash2, Upload, X } from 'lucide-react';
 import { getHealthCheckQueryKey, useGeneratePlan, useHealthCheck } from '@workspace/api-client-react';
 import type { PlanInput, PlanMilestone, PlanResponse } from '@workspace/api-client-react';
+import { buildMilestoneCalendar, changeMilestoneDay, dateLabel, dateAndTimeInZone, groupMilestonesByDay, isoDayInZone, isoFromZonedDateTime } from './lib/planning-dates';
+import { parseProjectBackup } from './lib/project-backup';
 
 type Task = { id: string; title: string; completed: boolean };
 type Milestone = PlanMilestone;
-type Design = {
+export type Design = {
   template: string; format: string; background: string; backgroundStyle: string; textColor: string; accentColor: string;
   font: string; layout: string; title: string; showCountdown: boolean; showDate: boolean;
   showMilestones: boolean; showProgress: boolean; showCheckboxes: boolean; showCompletedMilestones: boolean; milestoneCount: number;
@@ -22,7 +24,7 @@ type Design = {
   coverSubtitle: string; coverBackground: string; coverTextColor: string; coverMockupPosition: string; image?: string;
 };
 type ReminderSettings = { daily: boolean; weekly: boolean; milestone: boolean; time: string; enabled: boolean };
-type Project = {
+export type Project = {
   id: string; title: string; description: string; deadline: string; timeZone: string;
   availableHoursPerDay: number; unavailableDays: string[]; started: boolean; remainingTasks: string;
   milestones: Milestone[]; design: Design; reminderSettings: ReminderSettings; submissionDescription: string;
@@ -88,39 +90,6 @@ function uuid() { return Math.random().toString(36).slice(2, 9); }
 function daysLeft(project?: Project) {
   if (!project) return 0;
   return Math.max(0, Math.ceil((new Date(project.deadline).getTime() - Date.now()) / 86400000));
-}
-function dateLabel(date: string, timeZone?: string) {
-  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(date);
-  const parsed = dateOnly ? new Date(`${date}T12:00:00Z`) : new Date(date);
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', ...((dateOnly ? 'UTC' : timeZone) ? { timeZone: dateOnly ? 'UTC' : timeZone } : {}) }).format(parsed);
-}
-function dateAndTimeInZone(iso: string, timeZone: string) {
-  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
-    timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).formatToParts(new Date(iso)).map(({ type, value }) => [type, value]));
-  return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
-}
-function isoDayInZone(value: string, timeZone: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  return dateAndTimeInZone(value, timeZone).date;
-}
-function isoFromZonedDateTime(date: string, time: string, timeZone: string) {
-  const [year, month, day] = date.split('-').map(Number);
-  const [hour, minute] = time.split(':').map(Number);
-  const target = Date.UTC(year, month - 1, day, hour, minute);
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  });
-  let instant = target;
-  for (let i = 0; i < 3; i++) {
-    const parts = Object.fromEntries(formatter.formatToParts(new Date(instant)).map(({ type, value }) => [type, value]));
-    const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute));
-    instant += target - represented;
-  }
-  const result = new Date(instant).toISOString();
-  const verified = dateAndTimeInZone(result, timeZone);
-  if (verified.date !== date || verified.time !== time) throw new Error('This local time does not exist in the selected time zone.');
-  return result;
 }
 function countdownParts(deadline: string) {
   const remaining = Math.max(0, new Date(deadline).getTime() - Date.now());
@@ -312,35 +281,7 @@ function AppContent() {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result)) as Partial<Project>;
-        if (typeof parsed.title !== 'string' || !parsed.title.trim() || parsed.title.length > 120 || typeof parsed.deadline !== 'string' || Number.isNaN(Date.parse(parsed.deadline)) || !Array.isArray(parsed.milestones)) throw new Error('Invalid project file');
-        const timeZone = typeof parsed.timeZone === 'string' ? parsed.timeZone : Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-        new Intl.DateTimeFormat('en-US', { timeZone });
-        const milestones: Milestone[] = parsed.milestones.map(raw => {
-          const milestone = raw as Partial<Milestone>;
-          if (typeof milestone.title !== 'string' || typeof milestone.date !== 'string' || Number.isNaN(Date.parse(milestone.date)) || !Array.isArray(milestone.tasks)) throw new Error('Invalid milestone');
-          const tasks = milestone.tasks.map(rawTask => {
-            const task = rawTask as Partial<Task>;
-            if (typeof task.title !== 'string' || !task.title.trim()) throw new Error('Invalid task');
-            return { id: uuid(), title: task.title.slice(0, 300), completed: Boolean(task.completed) };
-          });
-          const priority = milestone.priority === 'high' || milestone.priority === 'low' ? milestone.priority : 'medium';
-          return { id: uuid(), title: milestone.title.slice(0, 160), tMinus: String(milestone.tMinus || ''), date: milestone.date, description: String(milestone.description || '').slice(0, 1000), tasks, priority, completed: Boolean(milestone.completed) };
-        });
-        const reminderSettings: ReminderSettings = { daily: true, weekly: false, milestone: true, time: '08:30', enabled: false, ...parsed.reminderSettings };
-        const restored: Project = {
-          id: uuid(), title: parsed.title.trim(), description: String(parsed.description || '').slice(0, 2000),
-          deadline: parsed.deadline, timeZone, availableHoursPerDay: Math.min(24, Math.max(.25, Number(parsed.availableHoursPerDay) || 1)),
-          unavailableDays: Array.isArray(parsed.unavailableDays) ? parsed.unavailableDays.filter((day): day is typeof DAYS[number] => DAYS.includes(day as typeof DAYS[number])) : [],
-          started: Boolean(parsed.started), remainingTasks: String(parsed.remainingTasks || '').slice(0, 3000),
-          milestones, design: { ...defaultDesign(), ...(parsed.design || {}) }, reminderSettings,
-          submissionDescription: String(parsed.submissionDescription || '').slice(0, 500),
-          submissionTitle: String(parsed.submissionTitle || 'Your Deadline, Your Design — AI Countdown Lock Screen').slice(0, 120),
-          submissionChecks: Array.isArray(parsed.submissionChecks) ? Array.from({ length: 5 }, (_, i) => Boolean(parsed.submissionChecks?.[i])) : [false, false, false, false, false],
-          planSummary: typeof parsed.planSummary === 'string' ? parsed.planSummary.slice(0, 2000) : undefined,
-          planSource: parsed.planSource === 'gemini' ? 'gemini' : parsed.planSource === 'manual' ? 'manual' : undefined,
-          archived: false, createdAt: new Date().toISOString(),
-        };
+        const restored = parseProjectBackup(String(reader.result), defaultDesign());
         setProjects(current => [restored, ...current]); setActiveId(restored.id); setToast('Project imported and saved on this device.');
       } catch { setToast('That file is not a valid T-Minus project export.'); }
     };
@@ -383,7 +324,7 @@ function AppContent() {
   }
   function changeMilestoneDate(id: string, date: string) {
     if (!activeProject || !date) return;
-    patchActive({ milestones: activeProject.milestones.map(m => m.id === id ? { ...m, date: new Date(`${date}T12:00:00`).toISOString() } : m).sort((a, b) => +new Date(a.date) - +new Date(b.date)) });
+    patchActive({ milestones: changeMilestoneDay(activeProject.milestones, id, date) });
   }
   function moveMilestone(id: string, direction: -1 | 1) {
     if (!activeProject) return;
@@ -396,13 +337,7 @@ function AppContent() {
   }
   function exportCalendar() {
     if (!activeProject) return;
-    const events = activeProject.milestones.map(m => {
-      const day = isoDayInZone(m.date, activeProject.timeZone);
-      const nextDay = new Date(`${day}T00:00:00Z`); nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-      const endDay = nextDay.toISOString().slice(0, 10).replace(/-/g, '');
-      return `BEGIN:VEVENT\nUID:${m.id}@tminus.studio\nDTSTAMP:${icsDate(new Date())}\nDTSTART;VALUE=DATE:${day.replace(/-/g, '')}\nDTEND;VALUE=DATE:${endDay}\nSUMMARY:${icsEscape(m.title)} — ${icsEscape(activeProject.title)}\nDESCRIPTION:${icsEscape(m.description || 'A T-Minus checkpoint')}\nEND:VEVENT`;
-    }).join('\n');
-    downloadBlob(new Blob([`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//T-Minus Studio//EN\nCALSCALE:GREGORIAN\n${events}\nEND:VCALENDAR`], { type: 'text/calendar;charset=utf-8' }), `${slug(activeProject.title)}-milestones.ics`);
+    downloadBlob(new Blob([buildMilestoneCalendar(activeProject)], { type: 'text/calendar;charset=utf-8' }), `${slug(activeProject.title)}-milestones.ics`);
     setToast('Milestones added to a calendar file.');
   }
   async function askNotifications() {
@@ -509,12 +444,24 @@ function AppContent() {
           <button className="icon-btn colossal-theme" onClick={() => setDark(!dark)} aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} data-testid="button-theme">{dark ? <Sun /> : <Moon />}</button>
         </header>
         <main className={`main page-${page} ${!activeProject ? 'is-empty' : ''}`} aria-label={titleForPage}>
-          {page === 'overview' && <Overview project={activeProject} projects={projects} onNew={openNew} onTask={toggleTask} onSetActive={pickActive} onEdit={openEdit} onCalendar={exportCalendar} />}
+          {page === 'overview' && <>
+            <Overview project={activeProject} projects={projects} onNew={openNew} onTask={toggleTask} onSetActive={pickActive} onEdit={openEdit} onCalendar={exportCalendar} />
+            <details className="card" style={{ marginTop: 24 }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Manage projects and backups</summary>
+              <div style={{ marginTop: 24 }}>
+                <ProjectsPage projects={projects} search={search} setSearch={setSearch} showArchived={showArchived} setShowArchived={setShowArchived} activeId={activeId} onNew={openNew} onPick={pickActive} onEdit={openEdit} onDuplicate={duplicateProject} onDelete={deleteProject} onExport={exportJSON} onImport={() => importRef.current?.click()} onArchive={project => {
+                  setProjects(current => current.map(p => p.id === project.id ? { ...p, archived: !p.archived } : p));
+                  setToast(project.archived ? 'Project restored.' : 'Project archived.');
+                }} />
+              </div>
+            </details>
+          </>}
           {page === 'plan' && <PlanPage project={activeProject} milestones={activeMilestones} onAdd={addMilestone} onTask={toggleTask} onAddTask={addTask} onRemove={removeMilestone} onEditMilestone={editMilestone} onDate={changeMilestoneDate} onEdit={() => activeProject && openEdit(activeProject)} onNew={openNew} onMove={moveMilestone} showCompleted={showCompleted} setShowCompleted={setShowCompleted} />}
           {page === 'designer' && <Designer project={activeProject} onPatch={patchDesign} onExport={handleWallpaperExport} onUploadClick={() => uploadRef.current?.click()} onClearImage={() => patchDesign({ image: undefined })} onNew={openNew} uploadRef={uploadRef} onUpload={onUpload} onReset={() => { patchDesign(defaultDesign()); setToast('Design reset.'); }} onSave={() => setToast('Design saved on this device.')} />}
           {page === 'reminders' && <Reminders project={activeProject} onPatch={patchActive} onAsk={askNotifications} permission={notificationPermission} onCalendar={exportCalendar} onNew={openNew} />}
         </main>
       </div>
+      <input ref={importRef} type="file" accept="application/json,.json" aria-label="Import project backup" hidden onChange={e => { importJSON(e.target.files?.[0]); e.currentTarget.value = ''; }} />
       {modal && <ProjectModal key={`${modal}-${editingId}`} mode={modal} project={projects.find(p => p.id === editingId)} loading={generatePlan.isPending} onClose={() => setModal(null)} onSubmit={startProject} />}
       {toast && <div className="toast-message" role="status">{toast}</div>}
     </div>
@@ -564,11 +511,7 @@ function PlanPage({ project, milestones, onAdd, onTask, onAddTask, onRemove, onE
   const firstDayOffset = (new Date(year, monthNumber - 1, 1).getDay() + 6) % 7;
   const calendarCells = [...Array(firstDayOffset).fill(0), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (calendarCells.length % 7) calendarCells.push(0);
-  const milestonesByDay = visible.reduce<Record<string, Milestone[]>>((acc, m) => {
-    const day = isoDayInZone(m.date, project.timeZone);
-    acc[day] = [...(acc[day] || []), m];
-    return acc;
-  }, {});
+  const milestonesByDay = groupMilestonesByDay(visible, project.timeZone);
   const monthName = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(new Date(year, monthNumber - 1, 1));
   const shiftMonth = (step: number) => {
     const next = new Date(year, monthNumber - 1 + step, 1);
@@ -748,8 +691,6 @@ function EmptyProject({ onNew }: { onNew: () => void }) {
 
 function slug(text: string) { return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'project'; }
 function downloadBlob(blob: Blob, name: string) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1200); }
-function icsDate(d: Date) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
-function icsEscape(s: string) { return s.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;'); }
 function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, max: number, lineHeight: number) { const words = text.split(' '); let line = ''; for (const word of words) { const test = line ? `${line} ${word}` : word; if (ctx.measureText(test).width > max && line) { ctx.fillText(line, x, y); line = word; y += lineHeight; } else line = test; } if (line) ctx.fillText(line, x, y); }
 function wallpaperDimensions(d: Design): [number, number] {
   if (d.format === 'laptop' || d.format === 'desktop') return [1920, 1080];
