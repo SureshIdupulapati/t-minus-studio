@@ -462,12 +462,7 @@ function AppContent() {
       const blur = Math.max(0, d.imageBlur || 0) * canvas.width / 1000;
       ctx.save(); ctx.filter = `brightness(${(d.imageBrightness ?? 100) / 100}) blur(${blur}px)`;
       const stretch = blur * 3;
-      const targetWidth = canvas.width + stretch * 2, targetHeight = canvas.height + stretch * 2;
-      const scale = Math.max(targetWidth / image.width, targetHeight / image.height);
-      const drawWidth = image.width * scale, drawHeight = image.height * scale;
-      const alignX = d.imagePosition === 'left' ? 0 : d.imagePosition === 'right' ? 1 : .5;
-      const alignY = d.imagePosition === 'top' ? 0 : d.imagePosition === 'bottom' ? 1 : .5;
-      ctx.drawImage(image, -stretch + (targetWidth - drawWidth) * alignX, -stretch + (targetHeight - drawHeight) * alignY, drawWidth, drawHeight);
+      ctx.drawImage(image, -stretch, -stretch, canvas.width + stretch * 2, canvas.height + stretch * 2);
       ctx.restore();
       ctx.fillStyle = `rgba(0,0,0,${(d.overlayOpacity ?? 46) / 100})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
       finish();
