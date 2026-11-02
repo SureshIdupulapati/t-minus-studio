@@ -4,6 +4,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import PageStart from '@/components/page-start';
 import { Redirect, Route, Switch, useLocation, Router as WouterRouter, Link } from 'wouter';
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Copy, Download, FileImage, FileJson, Flame, FolderOpen, ImagePlus, LayoutDashboard, ListChecks, Menu, Moon, MoreHorizontal, Plus, Search, Settings2, Sparkles, Sun, Trash2, Upload, X } from 'lucide-react';
 import { getHealthCheckQueryKey, useGeneratePlan, useHealthCheck } from '@workspace/api-client-react';
@@ -32,6 +33,12 @@ type ModalMode = 'create' | 'edit' | null;
 const queryClient = new QueryClient();
 const STORE = 't-minus-studio-projects-v1';
 const THEME = 't-minus-studio-theme';
+const PAGE_META: Record<string, { title: string; description: string }> = {
+  '/': { title: 'Your deadline, at a glance', description: 'Choose a deadline, track your progress, and see the next action toward your goal.' },
+  '/plan': { title: 'Your milestone plan', description: 'Work backward from your deadline with an editable Gemini-assisted milestone plan.' },
+  '/designer': { title: 'Design your countdown', description: 'Create and download a personalized countdown lock screen for your phone or computer.' },
+  '/reminders': { title: 'Your reminder rhythm', description: 'Choose optional check-ins and export milestone dates to your calendar.' },
+};
 const templates = [
   { id: 'solstice', label: 'Solstice', bg: 'linear-gradient(155deg,#28483d,#a65f4a)', color: '#28483d', text: '#f7eddb', accent: '#d78b68' },
   { id: 'mono', label: 'Fieldnotes', bg: '#ded3bf', color: '#ded3bf', text: '#28483d', accent: '#a65f4a' },
@@ -151,6 +158,18 @@ function AppContent() {
   const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), staleTime: 60000, retry: 1 } });
   const activeProject = projects.find(p => p.id === activeId) || projects.find(p => !p.archived) || projects[0];
   const page = location === '/' ? 'overview' : location.slice(1);
+
+  useEffect(() => {
+    const meta = PAGE_META[location] || PAGE_META['/'];
+    document.title = `${meta.title} · T-Minus Studio`;
+    for (const [selector, content] of [
+      ['meta[name="description"]', meta.description],
+      ['meta[property="og:title"]', document.title],
+      ['meta[property="og:description"]', meta.description],
+      ['meta[name="twitter:title"]', document.title],
+      ['meta[name="twitter:description"]', meta.description],
+    ]) document.querySelector(selector)?.setAttribute('content', content);
+  }, [location]);
 
   useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(projects)); } catch { setToast('Local storage is full. Export a backup or remove a large reference image.'); } }, [projects]);
   useEffect(() => { document.documentElement.classList.toggle('dark', dark); try { localStorage.setItem(THEME, dark ? 'dark' : 'light'); } catch { /* theme still applies for this session */ } }, [dark]);
@@ -512,7 +531,7 @@ function AppContent() {
 }
 
 function Overview({ project, projects, onNew, onTask, onSetActive, onEdit, onCalendar }: { project?: Project; projects: Project[]; onNew: () => void; onTask: (m: string, t: string) => void; onSetActive: (id: string) => void; onEdit: (p: Project) => void; onCalendar: () => void }) {
-  if (!project) return <EmptyProject onNew={onNew} />;
+  if (!project) return <PageStart page="overview" onNew={onNew} />;
   const upcoming = project.milestones.find(m => !m.completed) || project.milestones[0];
   const tasks = project.milestones.flatMap(m => m.tasks.map(t => ({ ...t, milestone: m.title, milestoneId: m.id }))).filter(t => !t.completed).slice(0, 4);
   const remain = daysLeft(project);
@@ -520,7 +539,7 @@ function Overview({ project, projects, onNew, onTask, onSetActive, onEdit, onCal
   return <>
     <div className="eyebrow">A little closer, every day</div>
     <div className="section-head" style={{ margin: '9px 0 0', alignItems: 'center' }}>
-      <div><h1 className="page-title" style={{ margin: 0 }}>Good things take a deadline.</h1><p className="page-subtitle" style={{ marginTop: 10 }}>Make a big intention feel smaller, clearer, and worth coming back to.</p></div>
+      <div><h1 className="page-title" style={{ margin: 0 }}>Your deadline, at a glance.</h1><p className="page-subtitle" style={{ marginTop: 10 }}>Your progress, next actions, and time remaining in one place.</p></div>
       <button className="btn" onClick={onNew}><Plus /> Start a goal</button>
     </div>
     <div className="grid-main">
@@ -547,7 +566,7 @@ function Overview({ project, projects, onNew, onTask, onSetActive, onEdit, onCal
 function PlanPage({ project, milestones, onAdd, onTask, onAddTask, onRemove, onEditMilestone, onDate, onEdit, onNew, onMove, showCompleted, setShowCompleted }: { project?: Project; milestones: Milestone[]; onAdd: () => void; onTask: (m: string, t: string) => void; onAddTask: (m: Milestone) => void; onRemove: (id: string) => void; onEditMilestone: (id: string) => void; onDate: (id: string, date: string) => void; onEdit: () => void; onNew: () => void; onMove: (id: string, direction: -1 | 1) => void; showCompleted: boolean; setShowCompleted: (v: boolean) => void }) {
   const [view, setView] = useState<'timeline' | 'calendar'>('timeline');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
-  if (!project) return <EmptyProject onNew={onNew} />;
+  if (!project) return <PageStart page="plan" onNew={onNew} />;
   const visible = milestones.filter(m => showCompleted || !m.completed);
   const [year, monthNumber] = month.split('-').map(Number);
   const daysInMonth = new Date(year, monthNumber, 0).getDate();
@@ -565,7 +584,7 @@ function PlanPage({ project, milestones, onAdd, onTask, onAddTask, onRemove, onE
     setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
   };
   return <>
-    <div className="eyebrow">The path, not the pressure</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">A plan with room to breathe.</h1><p className="page-subtitle">{project.title} · {daysLeft(project)} days until your deadline. Your milestones are editable and saved as you go.</p></div><div className="tool-row"><button className="btn secondary" onClick={onEdit}><Settings2 /> Edit goal</button><button className="btn" onClick={onAdd}><Plus /> Add checkpoint</button></div></div>
+    <div className="eyebrow">The path, not the pressure</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Your milestone plan.</h1><p className="page-subtitle">{project.title} · {daysLeft(project)} days until your deadline. Your milestones are editable and saved as you go.</p></div><div className="tool-row"><button className="btn secondary" onClick={onEdit}><Settings2 /> Edit goal</button><button className="btn" onClick={onAdd}><Plus /> Add checkpoint</button></div></div>
     {project.planSummary && <div className="alert" style={{ marginTop: 19 }}><strong>Gemini’s plan summary</strong><br />{project.planSummary}</div>}
     <div className="tool-row" style={{ marginTop: 20 }}><button className={`btn small ${view === 'timeline' ? '' : 'secondary'}`} onClick={() => setView('timeline')}><ListChecks size={15} /> Timeline</button><button className={`btn small ${view === 'calendar' ? '' : 'secondary'}`} onClick={() => setView('calendar')}><CalendarDays size={15} /> Calendar</button></div>
     <div className="two-col" style={{ gridTemplateColumns: '1.1fr .9fr' }}>
@@ -585,14 +604,14 @@ function PlanPage({ project, milestones, onAdd, onTask, onAddTask, onRemove, onE
 }
 
 function Designer({ project, onPatch, onExport, onUploadClick, onClearImage, onNew, uploadRef, onUpload, onReset, onSave }: { project?: Project; onPatch: (p: Partial<Design>) => void; onExport: () => void; onUploadClick: () => void; onClearImage: () => void; onNew: () => void; uploadRef: React.RefObject<HTMLInputElement | null>; onUpload: (f?: File) => void; onReset: () => void; onSave: () => void }) {
-  if (!project) return <EmptyProject onNew={onNew} />;
+  if (!project) return <PageStart page="designer" onNew={onNew} />;
   const d = project.design;
   const format = d.format === 'laptop' || d.format === 'desktop' ? 'desktop' : d.format === 'cover' ? 'cover' : d.format === 'custom' ? 'custom' : 'phone';
   const aspectRatio = format === 'phone' ? '9/16' : format === 'cover' ? '3/2' : format === 'custom' ? `${d.customWidth}/${d.customHeight}` : '16/9';
   const visibleMilestones = project.milestones.filter(m => d.showCompletedMilestones || !m.completed).slice(0, d.milestoneCount);
   const clock = countdownParts(project.deadline);
   return <>
-    <div className="eyebrow">A reminder that fits in your pocket</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Keep the reason close.</h1><p className="page-subtitle">Make a lock screen that brings your intention back into view. Changes save automatically on this device.</p></div><div className="tool-row"><button className="btn secondary" onClick={onSave}>Save design</button><button className="btn" onClick={onExport}><Download /> Download lock screen</button></div></div>
+    <div className="eyebrow">A reminder that fits in your pocket</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Design your countdown.</h1><p className="page-subtitle">Make a lock screen that brings your intention back into view. Changes save automatically on this device.</p></div><div className="tool-row"><button className="btn secondary" onClick={onSave}>Save design</button><button className="btn" onClick={onExport}><Download /> Download lock screen</button></div></div>
     <div className="designer-layout">
       <div className="preview-stage">
         <div className={`wallpaper template-${d.template} ${d.image ? 'has-image' : ''}`} style={{ color: d.textColor, aspectRatio, background: d.backgroundStyle === 'gradient' ? `linear-gradient(145deg, ${d.background}, ${d.accentColor})` : d.background, width: format === 'desktop' || format === 'cover' ? '100%' : format === 'custom' ? `min(100%,${Math.round(410 * d.customWidth / d.customHeight)}px)` : undefined, borderRadius: format === 'phone' ? 28 : 16 }}>
@@ -634,11 +653,11 @@ function Designer({ project, onPatch, onExport, onUploadClick, onClearImage, onN
 }
 
 function Reminders({ project, onPatch, onAsk, permission, onCalendar, onNew }: { project?: Project; onPatch: (p: Partial<Project>) => void; onAsk: () => void; permission: string; onCalendar: () => void; onNew: () => void }) {
-  if (!project) return <EmptyProject onNew={onNew} />;
+  if (!project) return <PageStart page="reminders" onNew={onNew} />;
   const settings = project.reminderSettings;
   const update = (patch: Partial<ReminderSettings>) => onPatch({ reminderSettings: { ...settings, ...patch } });
   return <>
-    <div className="eyebrow">A nudge, never a nag</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Return to what matters.</h1><p className="page-subtitle">Choose a gentle rhythm. Browser notifications are permission-based and only appear while this app is open.</p></div><button className="btn" onClick={onCalendar}><CalendarDays /> Export calendar file</button></div>
+    <div className="eyebrow">A nudge, never a nag</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Your reminder rhythm.</h1><p className="page-subtitle">Choose a gentle rhythm. Browser notifications are permission-based and only appear while this app is open.</p></div><button className="btn" onClick={onCalendar}><CalendarDays /> Export calendar file</button></div>
     <div className="two-col">
       <section className="card"><div className="card-head"><div><h2 className="card-title">Your reminder rhythm</h2><div className="section-note">Settings are stored on this device.</div></div><Bell size={20} /></div>
         <div className="reminder-row"><div><div className="reminder-title">Daily check-in</div><div className="reminder-desc">A small prompt to choose your next right thing.</div></div><button className={`switch ${settings.daily ? 'on' : ''}`} aria-label="Toggle daily check-in" aria-pressed={settings.daily} onClick={() => update({ daily: !settings.daily })}><i /></button></div>
