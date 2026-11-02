@@ -1,3 +1,4 @@
 - [pnpm AI integration setup](pnpm-ai-integrations.md) — install after wiring copied integration packages, before typecheck or codegen.
 - [Mission scope](mission-scope.md) — keep the experience focused on deadline planning, countdown lock screens, and optional reminders.
 - [GitHub export access](github-export.md) — the workspace GitHub CLI can be authenticated even when the connector has no runtime connection.
+- [Goal-flow safety](goal-flow-safety.md) — step transitions must not submit early; keep state alive across navigation and verify source after concurrent updates.

@@ -680,7 +680,7 @@ function ProjectModal({ mode, project, loading, onClose, onSubmit }: { mode: Mod
         <div className="field"><label htmlFor="goal-remaining">What remains to be done?</label><textarea id="goal-remaining" name="remainingTasks" maxLength={3000} defaultValue={p?.remainingTasks || ''} placeholder="Separate ideas with a semicolon, or leave it blank." /></div>
         <label className="check-row"><input type="checkbox" name="started" defaultChecked={p?.started} /> I’ve already begun</label>
       </div>
-      <div className="tool-row" style={{ justifyContent: 'space-between', marginTop: 24 }}><button type="button" className="btn secondary" onClick={step === 1 ? onClose : () => setStep(1)}>{step === 1 ? 'Not now' : 'Back'}</button><div className="tool-row">{step === 1 ? <button type="button" className="btn" onClick={() => { if (formRef.current?.reportValidity()) setStep(2); }}>Continue <ArrowRight /></button> : <><button type="submit" className="btn secondary" disabled={loading}>{mode === 'edit' ? 'Save details' : 'Build it by hand'}</button>{mode !== 'edit' && <button type="button" className="btn terracotta" disabled={loading} onClick={() => { if (formRef.current?.reportValidity()) onSubmit(formRef.current, true); }}>{loading ? <><span className="loader" /> Thinking…</> : <><Sparkles /> Plan with Gemini</>}</button>}</>}</div></div>
+      <div className="tool-row" style={{ justifyContent: 'space-between', marginTop: 24 }}><button type="button" className="btn secondary" onClick={step === 1 ? onClose : () => setStep(1)}>{step === 1 ? 'Not now' : 'Back'}</button><div className="tool-row">{step === 1 ? <button key="continue-goal-setup" type="button" className="btn" onClick={e => { e.preventDefault(); if (formRef.current?.reportValidity()) setStep(2); }}>Continue <ArrowRight /></button> : <><button key="submit-manual-goal" type="submit" className="btn secondary" disabled={loading}>{mode === 'edit' ? 'Save details' : 'Build it by hand'}</button>{mode !== 'edit' && <button type="button" className="btn terracotta" disabled={loading} onClick={() => { if (formRef.current?.reportValidity()) onSubmit(formRef.current, true); }}>{loading ? <><span className="loader" /> Thinking…</> : <><Sparkles /> Plan with Gemini</>}</button>}</>}</div></div>
     </form>
   </section></div>;
 }
@@ -806,10 +806,10 @@ function paintWallpaperText(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasEle
 
 function Router() {
   return <RoutedErrorBoundary><Switch>
-    <Route path="/" component={() => <AppContent />} />
-    <Route path="/plan" component={() => <AppContent />} />
-    <Route path="/designer" component={() => <AppContent />} />
-    <Route path="/reminders" component={() => <AppContent />} />
+    <Route path="/" component={AppContent} />
+    <Route path="/plan" component={AppContent} />
+    <Route path="/designer" component={AppContent} />
+    <Route path="/reminders" component={AppContent} />
     <Route path="/projects" component={() => <Redirect to="/" replace />} />
     <Route path="/submission" component={() => <Redirect to="/" replace />} />
     <Route component={NotFound} />

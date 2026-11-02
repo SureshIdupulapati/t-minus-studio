@@ -1,0 +1,30 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "c1g1JLExwH4RNUXvLyDDA"
+uri = "file://generated-artifacts/live-demo/countdown-wallpaper.png"
+type = "image"
+title = "Wallpaper exported during the live walkthrough"
+description = "Actual 1440 × 2560 PNG from the portfolio demo, using the Gemini-suggested Editorial Pine style."
+logical_id = "2a781c01-c0e3-439c-82c6-70ac4b19558b"
+content_hash = "sha256:7e62bbf210b091d362ab9fb35c70c1f50f9158d0b99596d334f32251dbca5462"
+size = 272179
+mtime_ms = 1793622413907
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:95881240-29f1-4d16-a99f-d1314f0840c0/2a781c01-c0e3-439c-82c6-70ac4b19558b/f0af137b-3943-46bf-8c12-b44d36c78880"
+storage_version_token = "1793622636409103"
+content_type = "image/png"
+
+[[outputs]]
+id = "SSWLw1-9C_uCfBOypYQLj"
+uri = "file://generated-artifacts/live-demo/milestones.ics"
+type = "unspecified"
+title = "Portfolio milestone calendar"
+description = "Actual calendar export containing the five Gemini-generated milestones. Import into Google Calendar, Apple Calendar, or Outlook."
+logical_id = "b3e8a910-f8ef-44ef-a4d5-a04451ae4b91"
+content_hash = "sha256:07f1e21ad6e9a036790c78db1be375876548d01d2afb383c6dd29bef6adfbb7e"
+size = 1821
+mtime_ms = 1793622487677
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:95881240-29f1-4d16-a99f-d1314f0840c0/b3e8a910-f8ef-44ef-a4d5-a04451ae4b91/8769b85a-ab7a-4472-9db7-5de95df01d83"
+storage_version_token = "1793622637646953"
+content_type = "application/octet-stream"
