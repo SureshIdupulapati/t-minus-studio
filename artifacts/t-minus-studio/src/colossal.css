@@ -87,6 +87,8 @@ body:after{display:none}
 .colossal-shell .modal-title{font-size:28px;font-weight:800;letter-spacing:-.055em}
 .colossal-shell .toast-message{background:hsl(var(--foreground));color:hsl(var(--background));border-radius:0}
 .wallpaper,.cover-preview{--app-font-serif:'Fraunces',Georgia,serif}
+.wallpaper-content .wallpaper-project-name,.wallpaper-content .wallpaper-title{font-family:inherit}
+.wallpaper.template-field .wallpaper-content{border-radius:0;background:transparent;padding:0}
 @media(min-width:1600px){.colossal-start{max-width:1600px;margin:auto}.colossal-type{font-size:318px}}
 @media(max-width:1000px){
   .colossal-header{padding:28px 28px 16px;height:104px;gap:22px}

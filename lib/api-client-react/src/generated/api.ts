@@ -26,6 +26,8 @@ import type {
 
 import type {
   ApiError,
+  DesignBrief,
+  DesignSuggestions,
   HealthStatus,
   PlanInput,
   PlanResponse
@@ -57,6 +59,94 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGenerateDesignSuggestionsUrl = () => {
+
+
+
+
+  return `/api/design-suggestions`
+}
+
+/**
+ * @summary Suggest three lock-screen styles from a brief and optional reference image
+ */
+export const generateDesignSuggestions = async (designBrief: DesignBrief, options?: Parameters<typeof customFetch>[1]): Promise<DesignSuggestions> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<DesignSuggestions>(getGenerateDesignSuggestionsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(designBrief)
+  }
+);}
+
+
+
+
+
+export const getGenerateDesignSuggestionsMutationKey = () => ['generateDesignSuggestions'] as const;
+
+export const getGenerateDesignSuggestionsMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDesignSuggestions>>, TError,GenerateDesignSuggestionsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateDesignSuggestions>>, TError,GenerateDesignSuggestionsMutationVariables, TContext> => {
+
+const mutationKey = getGenerateDesignSuggestionsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateDesignSuggestions>>, GenerateDesignSuggestionsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateDesignSuggestions(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateDesignSuggestionsMutationResult = NonNullable<Awaited<ReturnType<typeof generateDesignSuggestions>>>
+    export type GenerateDesignSuggestionsMutationBody = BodyType<DesignBrief>
+    export type GenerateDesignSuggestionsMutationError = ErrorType<ApiError>
+    export type GenerateDesignSuggestionsMutationVariables = {data: BodyType<DesignBrief>}
+
+    /**
+ * @summary Suggest three lock-screen styles from a brief and optional reference image
+ */
+export const useGenerateDesignSuggestions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDesignSuggestions>>, TError,GenerateDesignSuggestionsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof generateDesignSuggestions>>,
+        TError,
+        GenerateDesignSuggestionsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateDesignSuggestionsMutationOptions(options), queryClient);
+    }
 
 export const getHealthCheckUrl = () => {
 

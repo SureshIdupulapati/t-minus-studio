@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type ErrorRequestHandler } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -26,6 +26,16 @@ app.use(
   }),
 );
 app.use(cors());
+// Only this route accepts a transient, resized reference image.
+app.use("/api/design-suggestions", express.json({ limit: "2100kb" }));
+const designBodyError: ErrorRequestHandler = (error, _req, res, next) => {
+  if (error?.type === "entity.too.large") {
+    res.status(413).json({ error: "The reference image is too large. Choose a smaller image." });
+  } else if (error instanceof SyntaxError) {
+    res.status(400).json({ error: "The style request was not valid JSON." });
+  } else next(error);
+};
+app.use("/api/design-suggestions", designBodyError);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

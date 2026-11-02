@@ -7,6 +7,17 @@
  */
 
 export * from './apiError';
+export * from './designBrief';
+export * from './designBriefFormat';
+export * from './designCheckpoint';
+export * from './designReference';
+export * from './designReferenceMimeType';
+export * from './designSuggestion';
+export * from './designSuggestionBackgroundStyle';
+export * from './designSuggestionFont';
+export * from './designSuggestionLayout';
+export * from './designSuggestions';
+export * from './designSuggestionTemplate';
 export * from './healthStatus';
 export * from './planInput';
 export * from './planInputUnavailableDaysItem';

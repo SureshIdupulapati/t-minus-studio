@@ -9,6 +9,73 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Suggest three lock-screen styles from a brief and optional reference image
+ */
+export const generateDesignSuggestionsBodyGoalMax = 120;
+
+export const generateDesignSuggestionsBodyPromptMax = 1200;
+
+export const generateDesignSuggestionsBodyMilestonesItemTitleMax = 200;
+
+export const generateDesignSuggestionsBodyMilestonesItemTMinusMax = 40;
+
+export const generateDesignSuggestionsBodyMilestonesMax = 8;
+
+export const generateDesignSuggestionsBodyReferenceImageDataMin = 4;
+export const generateDesignSuggestionsBodyReferenceImageDataMax = 2000000;
+
+
+export const generateDesignSuggestionsBodyReferenceImageDataRegExp = new RegExp('^[A-Za-z0-9+/]+={0,2}$');
+
+
+export const GenerateDesignSuggestionsBody = zod.object({
+  "goal": zod.string().min(1).max(generateDesignSuggestionsBodyGoalMax),
+  "prompt": zod.string().max(generateDesignSuggestionsBodyPromptMax),
+  "format": zod.enum(['phone', 'desktop', 'custom', 'cover']),
+  "milestones": zod.array(zod.object({
+  "title": zod.string().max(generateDesignSuggestionsBodyMilestonesItemTitleMax),
+  "tMinus": zod.string().max(generateDesignSuggestionsBodyMilestonesItemTMinusMax)
+})).max(generateDesignSuggestionsBodyMilestonesMax),
+  "referenceImage": zod.object({
+  "mimeType": zod.enum(['image/jpeg', 'image/png', 'image/webp']),
+  "data": zod.string().min(generateDesignSuggestionsBodyReferenceImageDataMin).max(generateDesignSuggestionsBodyReferenceImageDataMax).regex(generateDesignSuggestionsBodyReferenceImageDataRegExp)
+}).optional()
+})
+
+export const generateDesignSuggestionsResponseInspirationMax = 600;
+
+export const generateDesignSuggestionsResponseOptionsItemNameMax = 60;
+
+export const generateDesignSuggestionsResponseOptionsItemRationaleMax = 240;
+
+export const generateDesignSuggestionsResponseOptionsItemBackgroundRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const generateDesignSuggestionsResponseOptionsItemAccentColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const generateDesignSuggestionsResponseOptionsItemTextColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const generateDesignSuggestionsResponseOptionsItemTitleMax = 80;
+
+export const generateDesignSuggestionsResponseOptionsMin = 3;
+export const generateDesignSuggestionsResponseOptionsMax = 3;
+
+
+
+export const GenerateDesignSuggestionsResponse = zod.object({
+  "inspiration": zod.string().min(1).max(generateDesignSuggestionsResponseInspirationMax),
+  "options": zod.array(zod.object({
+  "name": zod.string().min(1).max(generateDesignSuggestionsResponseOptionsItemNameMax),
+  "rationale": zod.string().min(1).max(generateDesignSuggestionsResponseOptionsItemRationaleMax),
+  "template": zod.enum(['solstice', 'mono', 'night', 'orbit', 'paper', 'signal', 'field', 'dawn']),
+  "background": zod.string().regex(generateDesignSuggestionsResponseOptionsItemBackgroundRegExp),
+  "accentColor": zod.string().regex(generateDesignSuggestionsResponseOptionsItemAccentColorRegExp),
+  "textColor": zod.string().regex(generateDesignSuggestionsResponseOptionsItemTextColorRegExp),
+  "backgroundStyle": zod.enum(['solid', 'gradient']),
+  "font": zod.enum(['Fraunces', 'DM Sans', 'DM Mono']),
+  "layout": zod.enum(['left', 'center', 'right']),
+  "title": zod.string().min(1).max(generateDesignSuggestionsResponseOptionsItemTitleMax)
+})).min(generateDesignSuggestionsResponseOptionsMin).max(generateDesignSuggestionsResponseOptionsMax)
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

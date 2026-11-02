@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import PageStart from '@/components/page-start';
+import GeminiDesignAssistant from '@/components/gemini-design-assistant';
 import { Redirect, Route, Switch, useLocation, Router as WouterRouter, Link } from 'wouter';
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Copy, Download, FileImage, FileJson, Flame, FolderOpen, ImagePlus, LayoutDashboard, ListChecks, Menu, Moon, MoreHorizontal, Plus, Search, Settings2, Sparkles, Sun, Trash2, Upload, X } from 'lucide-react';
 import { getHealthCheckQueryKey, useGeneratePlan, useHealthCheck } from '@workspace/api-client-react';
@@ -602,6 +603,7 @@ function Designer({ project, onPatch, onExport, onUploadClick, onClearImage, onN
   const clock = countdownParts(project.deadline);
   return <>
     <div className="eyebrow">A reminder that fits in your pocket</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Design your countdown.</h1><p className="page-subtitle">Make a lock screen that brings your intention back into view. Changes save automatically on this device.</p></div><div className="tool-row"><button className="btn secondary" onClick={onSave}>Save design</button><button className="btn" onClick={onExport}><Download /> Download lock screen</button></div></div>
+    <GeminiDesignAssistant key={`${project.id}:${d.format}`} goal={project.title} format={d.format === 'phone' ? 'phone' : d.format === 'custom' ? 'custom' : d.format === 'cover' ? 'cover' : 'desktop'} milestones={project.milestones.slice(0, 8).map(m => ({ title: m.title, tMinus: m.tMinus }))} hasBackgroundImage={!!d.image} onApply={onPatch} />
     <div className="designer-layout">
       <div className="preview-stage">
         <div className={`wallpaper template-${d.template} ${d.image ? 'has-image' : ''}`} style={{ color: d.textColor, aspectRatio, background: d.backgroundStyle === 'gradient' ? `linear-gradient(145deg, ${d.background}, ${d.accentColor})` : d.background, width: format === 'desktop' || format === 'cover' ? '100%' : format === 'custom' ? `min(100%,${Math.round(410 * d.customWidth / d.customHeight)}px)` : undefined, borderRadius: format === 'phone' ? 28 : 16 }}>

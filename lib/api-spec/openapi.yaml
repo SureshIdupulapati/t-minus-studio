@@ -13,6 +13,48 @@ tags:
   - name: planning
     description: Gemini-powered deadline planning
 paths:
+  /design-suggestions:
+    post:
+      operationId: generateDesignSuggestions
+      tags: [planning]
+      summary: Suggest three lock-screen styles from a brief and optional reference image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DesignBrief"
+      responses:
+        "200":
+          description: Gemini-inspired editable styles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesignSuggestions"
+        "400":
+          description: Invalid style brief or reference image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          description: Reference image is too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Too many style requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Gemini could not suggest usable designs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /healthz:
     get:
       operationId: healthCheck
@@ -59,6 +101,100 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    DesignBrief:
+      type: object
+      required: [goal, prompt, format, milestones]
+      properties:
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 120
+        prompt:
+          type: string
+          maxLength: 1200
+        format:
+          type: string
+          enum: [phone, desktop, custom, cover]
+        milestones:
+          type: array
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/DesignCheckpoint"
+        referenceImage:
+          $ref: "#/components/schemas/DesignReference"
+    DesignCheckpoint:
+      type: object
+      required: [title, tMinus]
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        tMinus:
+          type: string
+          maxLength: 40
+    DesignReference:
+      type: object
+      required: [mimeType, data]
+      properties:
+        mimeType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        data:
+          type: string
+          minLength: 4
+          maxLength: 2000000
+          pattern: '^[A-Za-z0-9+/]+={0,2}$'
+    DesignSuggestions:
+      type: object
+      required: [inspiration, options]
+      properties:
+        inspiration:
+          type: string
+          minLength: 1
+          maxLength: 600
+        options:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/DesignSuggestion"
+    DesignSuggestion:
+      type: object
+      required: [name, rationale, template, background, accentColor, textColor, backgroundStyle, font, layout, title]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 240
+        template:
+          type: string
+          enum: [solstice, mono, night, orbit, paper, signal, field, dawn]
+        background:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        accentColor:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        textColor:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        backgroundStyle:
+          type: string
+          enum: [solid, gradient]
+        font:
+          type: string
+          enum: [Fraunces, DM Sans, DM Mono]
+        layout:
+          type: string
+          enum: [left, center, right]
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
     HealthStatus:
       type: object
       properties:

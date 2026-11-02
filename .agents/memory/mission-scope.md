@@ -20,3 +20,9 @@ The user selected the Colossal Typographic Landing canvas reference and asked to
 **Why:** This is an explicit visual direction, replacing the previous warm green editorial look.
 
 **How to apply:** Preserve the reference's black-and-white presentation, oversized heavy typography, horizontal navigation, subtle grid, and circular primary action. Keep T-Minus branding and actual deadline-planning functions, not the reference agency's identity or placeholder links.
+
+Gemini style references are temporary inspiration inputs, separate from saved wallpaper background photos. Generating options must not change the saved design before the user applies a style.
+
+**Why:** A reference should guide palette and composition without silently replacing a user's existing photo or manual styling. Keeping the reference transient also avoids adding another image to browser-local backups.
+
+**How to apply:** Explain what is sent to Gemini before generation, preserve goal/milestone data and existing photos on apply, and describe the feature as editable style suggestions rather than generated artwork.

@@ -5,6 +5,137 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type DesignBriefFormat = typeof DesignBriefFormat[keyof typeof DesignBriefFormat];
+
+
+export const DesignBriefFormat = {
+  phone: 'phone',
+  desktop: 'desktop',
+  custom: 'custom',
+  cover: 'cover',
+} as const;
+
+export interface DesignCheckpoint {
+  /** @maxLength 200 */
+  title: string;
+  /** @maxLength 40 */
+  tMinus: string;
+}
+
+export type DesignReferenceMimeType = typeof DesignReferenceMimeType[keyof typeof DesignReferenceMimeType];
+
+
+export const DesignReferenceMimeType = {
+  'image/jpeg': 'image/jpeg',
+  'image/png': 'image/png',
+  'image/webp': 'image/webp',
+} as const;
+
+export interface DesignReference {
+  mimeType: DesignReferenceMimeType;
+  /**
+     * @minLength 4
+     * @maxLength 2000000
+     * @pattern ^[A-Za-z0-9+/]+={0,2}$
+     */
+  data: string;
+}
+
+export interface DesignBrief {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  goal: string;
+  /** @maxLength 1200 */
+  prompt: string;
+  format: DesignBriefFormat;
+  /** @maxItems 8 */
+  milestones: DesignCheckpoint[];
+  referenceImage?: DesignReference;
+}
+
+export type DesignSuggestionTemplate = typeof DesignSuggestionTemplate[keyof typeof DesignSuggestionTemplate];
+
+
+export const DesignSuggestionTemplate = {
+  solstice: 'solstice',
+  mono: 'mono',
+  night: 'night',
+  orbit: 'orbit',
+  paper: 'paper',
+  signal: 'signal',
+  field: 'field',
+  dawn: 'dawn',
+} as const;
+
+export type DesignSuggestionBackgroundStyle = typeof DesignSuggestionBackgroundStyle[keyof typeof DesignSuggestionBackgroundStyle];
+
+
+export const DesignSuggestionBackgroundStyle = {
+  solid: 'solid',
+  gradient: 'gradient',
+} as const;
+
+export type DesignSuggestionFont = typeof DesignSuggestionFont[keyof typeof DesignSuggestionFont];
+
+
+export const DesignSuggestionFont = {
+  Fraunces: 'Fraunces',
+  DM_Sans: 'DM Sans',
+  DM_Mono: 'DM Mono',
+} as const;
+
+export type DesignSuggestionLayout = typeof DesignSuggestionLayout[keyof typeof DesignSuggestionLayout];
+
+
+export const DesignSuggestionLayout = {
+  left: 'left',
+  center: 'center',
+  right: 'right',
+} as const;
+
+export interface DesignSuggestion {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  rationale: string;
+  template: DesignSuggestionTemplate;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  background: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  accentColor: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  textColor: string;
+  backgroundStyle: DesignSuggestionBackgroundStyle;
+  font: DesignSuggestionFont;
+  layout: DesignSuggestionLayout;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  title: string;
+}
+
+export interface DesignSuggestions {
+  /**
+     * @minLength 1
+     * @maxLength 600
+     */
+  inspiration: string;
+  /**
+     * @minItems 3
+     * @maxItems 3
+     */
+  options: DesignSuggestion[];
+}
+
 export interface HealthStatus {
   status: string;
 }
