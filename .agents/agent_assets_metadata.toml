@@ -28,3 +28,17 @@ mtime_ms = 1793622487677
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:95881240-29f1-4d16-a99f-d1314f0840c0/b3e8a910-f8ef-44ef-a4d5-a04451ae4b91/8769b85a-ab7a-4472-9db7-5de95df01d83"
 storage_version_token = "1793622637646953"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "ItR416sZsCc5Mqg-S9VNJ"
+uri = "file://generated-artifacts/artwork-verification/phone-countdown.png"
+type = "image"
+title = "Original Gemini artwork with countdown"
+description = "Actual 1440 × 2560 PNG exported during verification: generated botanical artwork with separately rendered goal, countdown and milestones."
+logical_id = "728279d4-13ed-4ea4-9349-c71d12988e75"
+content_hash = "sha256:399e6797dfb3d100c0221ca4b9a3c1c83fbfdcd22f8ee96944b7ff8433099e99"
+size = 3414566
+mtime_ms = 1793697018330
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:95881240-29f1-4d16-a99f-d1314f0840c0/728279d4-13ed-4ea4-9349-c71d12988e75/909213b3-3274-4b84-b985-301918281704"
+storage_version_token = "1793697325205558"
+content_type = "image/png"

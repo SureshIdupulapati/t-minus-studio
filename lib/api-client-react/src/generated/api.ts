@@ -26,6 +26,8 @@ import type {
 
 import type {
   ApiError,
+  ArtworkBrief,
+  ArtworkResult,
   DesignBrief,
   DesignSuggestions,
   HealthStatus,
@@ -59,6 +61,195 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGenerateArtworkUrl = () => {
+
+
+
+
+  return `/api/gemini/artwork`
+}
+
+/**
+ * @summary Generate and store an original countdown wallpaper background
+ */
+export const generateArtwork = async (artworkBrief: ArtworkBrief, options?: Parameters<typeof customFetch>[1]): Promise<ArtworkResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ArtworkResult>(getGenerateArtworkUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(artworkBrief)
+  }
+);}
+
+
+
+
+
+export const getGenerateArtworkMutationKey = () => ['generateArtwork'] as const;
+
+export const getGenerateArtworkMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateArtwork>>, TError,GenerateArtworkMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateArtwork>>, TError,GenerateArtworkMutationVariables, TContext> => {
+
+const mutationKey = getGenerateArtworkMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateArtwork>>, GenerateArtworkMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateArtwork(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateArtworkMutationResult = NonNullable<Awaited<ReturnType<typeof generateArtwork>>>
+    export type GenerateArtworkMutationBody = BodyType<ArtworkBrief>
+    export type GenerateArtworkMutationError = ErrorType<ApiError>
+    export type GenerateArtworkMutationVariables = {data: BodyType<ArtworkBrief>}
+
+    /**
+ * @summary Generate and store an original countdown wallpaper background
+ */
+export const useGenerateArtwork = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateArtwork>>, TError,GenerateArtworkMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof generateArtwork>>,
+        TError,
+        GenerateArtworkMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateArtworkMutationOptions(options), queryClient);
+    }
+
+export const getGetArtworkUrl = (id: string,) => {
+
+
+
+
+  return `/api/artwork/${id}`
+}
+
+/**
+ * @summary Read stored artwork using its unlisted capability URL
+ */
+export const getArtwork = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetArtworkUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetArtworkQueryKey = (id: string,) => {
+    return [
+    `/api/artwork/${id}`
+    ] as const;
+    }
+
+
+export const getGetArtworkQueryOptions = <TData = Awaited<ReturnType<typeof getArtwork>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetArtworkQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArtwork>>> = ({ signal }) => getArtwork(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetArtworkQueryResult = NonNullable<Awaited<ReturnType<typeof getArtwork>>>
+export type GetArtworkQueryError = ErrorType<void>
+
+
+export function useGetArtwork<TData = Awaited<ReturnType<typeof getArtwork>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getArtwork>>,
+          TError,
+          Awaited<ReturnType<typeof getArtwork>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetArtwork<TData = Awaited<ReturnType<typeof getArtwork>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getArtwork>>,
+          TError,
+          Awaited<ReturnType<typeof getArtwork>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetArtwork<TData = Awaited<ReturnType<typeof getArtwork>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Read stored artwork using its unlisted capability URL
+ */
+
+export function useGetArtwork<TData = Awaited<ReturnType<typeof getArtwork>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArtwork>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetArtworkQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGenerateDesignSuggestionsUrl = () => {
 

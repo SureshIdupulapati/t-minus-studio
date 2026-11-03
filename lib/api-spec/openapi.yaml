@@ -13,6 +13,71 @@ tags:
   - name: planning
     description: Gemini-powered deadline planning
 paths:
+  /gemini/artwork:
+    post:
+      operationId: generateArtwork
+      tags: [planning]
+      summary: Generate and store an original countdown wallpaper background
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtworkBrief"
+      responses:
+        "200":
+          description: Stored artwork, not yet applied to a project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtworkResult"
+        "400":
+          description: Invalid brief, image, or dimensions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          description: Reference is too large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Generation rate limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Image generation or App Storage is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /artwork/{id}:
+    get:
+      operationId: getArtwork
+      tags: [planning]
+      summary: Read stored artwork using its unlisted capability URL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Original wallpaper background
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Artwork not found
+        "503":
+          description: App Storage unavailable
   /design-suggestions:
     post:
       operationId: generateDesignSuggestions
@@ -101,6 +166,34 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    ArtworkBrief:
+      allOf:
+        - $ref: "#/components/schemas/DesignBrief"
+        - type: object
+          required: [width, height]
+          properties:
+            width:
+              type: integer
+              minimum: 320
+              maximum: 5000
+            height:
+              type: integer
+              minimum: 320
+              maximum: 5000
+    ArtworkResult:
+      type: object
+      required: [objectPath, width, height, mimeType]
+      properties:
+        objectPath:
+          type: string
+          pattern: '^/api/artwork/[0-9a-f-]{36}\.jpg$'
+        width:
+          type: integer
+        height:
+          type: integer
+        mimeType:
+          type: string
+          enum: [image/jpeg]
     DesignBrief:
       type: object
       required: [goal, prompt, format, milestones]

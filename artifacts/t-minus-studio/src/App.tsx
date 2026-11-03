@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import PageStart from '@/components/page-start';
 import GeminiDesignAssistant from '@/components/gemini-design-assistant';
+import { wallpaperImageUrl } from '@/lib/wallpaper-image';
 import { Redirect, Route, Switch, useLocation, Router as WouterRouter, Link } from 'wouter';
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Bell, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Copy, Download, FileImage, FileJson, Flame, FolderOpen, ImagePlus, LayoutDashboard, ListChecks, Menu, Moon, MoreHorizontal, Plus, Search, Settings2, Sparkles, Sun, Trash2, Upload, X } from 'lucide-react';
 import { getHealthCheckQueryKey, useGeneratePlan, useHealthCheck } from '@workspace/api-client-react';
@@ -421,8 +422,8 @@ function AppContent() {
       ctx.fillStyle = `rgba(0,0,0,${(d.overlayOpacity ?? 46) / 100})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
       finish();
     };
-    image.onerror = finish;
-    image.src = d.image;
+    image.onerror = () => setToast('The background image could not load. No wallpaper was downloaded. Check your connection and try again.');
+    image.src = wallpaperImageUrl(d.image);
   }
 
   const onUpload = (file?: File) => {
@@ -546,11 +547,11 @@ function Designer({ project, onPatch, onExport, onUploadClick, onClearImage, onN
   const clock = countdownParts(project.deadline);
   return <>
     <div className="eyebrow">A reminder that fits in your pocket</div><div className="section-head" style={{ marginTop: 10 }}><div><h1 className="page-title">Design your countdown.</h1><p className="page-subtitle">Make a lock screen that brings your intention back into view. Changes save automatically on this device.</p></div><div className="tool-row"><button className="btn secondary" onClick={onSave}>Save design</button><button className="btn" onClick={onExport}><Download /> Download lock screen</button></div></div>
-    <GeminiDesignAssistant key={`${project.id}:${d.format}`} goal={project.title} format={d.format === 'phone' ? 'phone' : d.format === 'custom' ? 'custom' : d.format === 'cover' ? 'cover' : 'desktop'} milestones={project.milestones.slice(0, 8).map(m => ({ title: m.title, tMinus: m.tMinus }))} hasBackgroundImage={!!d.image} onApply={onPatch} />
+    <GeminiDesignAssistant key={`${project.id}:${d.format}:${d.customWidth}:${d.customHeight}`} goal={project.title} format={d.format === 'phone' ? 'phone' : d.format === 'custom' ? 'custom' : d.format === 'cover' ? 'cover' : 'desktop'} dimensions={wallpaperDimensions(d)} milestones={project.milestones.slice(0, 8).map(m => ({ title: m.title, tMinus: m.tMinus }))} hasBackgroundImage={!!d.image} onApply={onPatch} />
     <div className="designer-layout">
       <div className="preview-stage">
         <div className={`wallpaper template-${d.template} ${d.image ? 'has-image' : ''}`} style={{ color: d.textColor, aspectRatio, background: d.backgroundStyle === 'gradient' ? `linear-gradient(145deg, ${d.background}, ${d.accentColor})` : d.background, width: format === 'desktop' || format === 'cover' ? '100%' : format === 'custom' ? `min(100%,${Math.round(410 * d.customWidth / d.customHeight)}px)` : undefined, borderRadius: format === 'phone' ? 28 : 16 }}>
-          {d.image && <div className="wallpaper-bg-image" style={{ backgroundImage: `url(${d.image})`, backgroundPosition: d.imagePosition, filter: `brightness(${d.imageBrightness / 100}) blur(${d.imageBlur}px)` }} />}
+          {d.image && <div className="wallpaper-bg-image" style={{ backgroundImage: `url(${wallpaperImageUrl(d.image)})`, backgroundPosition: d.imagePosition, filter: `brightness(${d.imageBrightness / 100}) blur(${d.imageBlur}px)` }} />}
           <div className="wallpaper-shade" style={{ opacity: d.overlayOpacity / 100 }} />
           <div className="wallpaper-content" style={{ marginTop: format === 'phone' ? 25 : 0, textAlign: d.layout as 'center' | 'left' | 'right', alignSelf: d.layout === 'left' ? 'flex-start' : d.layout === 'right' ? 'flex-end' : 'center', fontFamily: d.font === 'DM Mono' ? 'var(--app-font-mono)' : d.font === 'DM Sans' ? 'var(--app-font-sans)' : 'var(--app-font-serif)', transform: `scale(${d.fontScale})` }}>
             <div className="wallpaper-kicker">T-MINUS COUNTDOWN</div>
@@ -577,10 +578,10 @@ function Designer({ project, onPatch, onExport, onUploadClick, onClearImage, onN
         <div className="field"><label>Words to come back to</label><input value={d.title} maxLength={48} onChange={e => onPatch({ title: e.target.value })} /></div>
         <div className="field"><label>Visible milestones</label><select value={d.milestoneCount} onChange={e => onPatch({ milestoneCount: Number(e.target.value) })}>{[1, 2, 3, 4, 5, 6].map(n => <option value={n} key={n}>{n} milestones</option>)}</select></div>
         <div className="tool-row" style={{ margin: '4px 0 10px', flexWrap: 'wrap' }}><label className="check-row"><input type="checkbox" checked={d.showCountdown} onChange={e => onPatch({ showCountdown: e.target.checked })} /> Countdown</label><label className="check-row"><input type="checkbox" checked={d.showDate} onChange={e => onPatch({ showDate: e.target.checked })} /> Deadline date</label><label className="check-row"><input type="checkbox" checked={d.showMilestones} onChange={e => onPatch({ showMilestones: e.target.checked })} /> Milestones</label><label className="check-row"><input type="checkbox" checked={d.showProgress} onChange={e => onPatch({ showProgress: e.target.checked })} /> Progress bar</label><label className="check-row"><input type="checkbox" checked={d.showCheckboxes} onChange={e => onPatch({ showCheckboxes: e.target.checked })} /> Checkboxes</label><label className="check-row"><input type="checkbox" checked={d.showCompletedMilestones} onChange={e => onPatch({ showCompletedMilestones: e.target.checked })} /> Include completed</label></div>
-        <div className="tool-row"><button className="btn small secondary" onClick={onUploadClick}><ImagePlus /> Reference image</button>{d.image && <button className="text-button" onClick={onClearImage}>Remove image</button>}</div>
+        <div className="tool-row"><button className="btn small secondary" onClick={onUploadClick}><ImagePlus /> Background photo</button>{d.image && <button className="text-button" onClick={onClearImage}>Remove image</button>}</div>
         {d.image && <><div className="field"><label>Brightness · {d.imageBrightness}%</label><input type="range" min="35" max="145" value={d.imageBrightness} onChange={e => onPatch({ imageBrightness: Number(e.target.value) })} /></div><div className="field"><label>Blur · {d.imageBlur}px</label><input type="range" min="0" max="12" value={d.imageBlur} onChange={e => onPatch({ imageBlur: Number(e.target.value) })} /></div><div className="field"><label>Overlay · {d.overlayOpacity}%</label><input type="range" min="0" max="85" value={d.overlayOpacity} onChange={e => onPatch({ overlayOpacity: Number(e.target.value) })} /></div><div className="field"><label>Image position</label><select value={d.imagePosition} onChange={e => onPatch({ imagePosition: e.target.value })}><option value="center">Center</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="left">Left</option><option value="right">Right</option></select></div></>}
         <input ref={uploadRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => { onUpload(e.target.files?.[0]); e.currentTarget.value = ''; }} />
-        <div className="section-note" style={{ marginTop: 10 }}>Your photo stays in this browser. Export creates a high-resolution PNG.</div>
+        <div className="section-note" style={{ marginTop: 10 }}>Uploaded background photos stay in this browser. Generated artwork is saved in App Storage. Export creates a high-resolution PNG.</div>
         <button className="text-button" style={{ marginTop: 15 }} onClick={onReset}>Reset design</button>
       </aside>
     </div>

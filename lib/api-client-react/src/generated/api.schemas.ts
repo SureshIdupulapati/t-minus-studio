@@ -55,6 +55,34 @@ export interface DesignBrief {
   referenceImage?: DesignReference;
 }
 
+export type ArtworkBrief = DesignBrief & {
+  /**
+     * @minimum 320
+     * @maximum 5000
+     */
+  width: number;
+  /**
+     * @minimum 320
+     * @maximum 5000
+     */
+  height: number;
+};
+
+export type ArtworkResultMimeType = typeof ArtworkResultMimeType[keyof typeof ArtworkResultMimeType];
+
+
+export const ArtworkResultMimeType = {
+  'image/jpeg': 'image/jpeg',
+} as const;
+
+export interface ArtworkResult {
+  /** @pattern ^/api/artwork/[0-9a-f-]{36}\.jpg$ */
+  objectPath: string;
+  width: number;
+  height: number;
+  mimeType: ArtworkResultMimeType;
+}
+
 export type DesignSuggestionTemplate = typeof DesignSuggestionTemplate[keyof typeof DesignSuggestionTemplate];
 
 

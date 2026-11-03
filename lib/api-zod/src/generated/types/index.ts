@@ -7,6 +7,9 @@
  */
 
 export * from './apiError';
+export * from './artworkBrief';
+export * from './artworkResult';
+export * from './artworkResultMimeType';
 export * from './designBrief';
 export * from './designBriefFormat';
 export * from './designCheckpoint';

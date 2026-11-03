@@ -9,6 +9,70 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Generate and store an original countdown wallpaper background
+ */
+export const generateArtworkBodyOneGoalMax = 120;
+
+export const generateArtworkBodyOnePromptMax = 1200;
+
+export const generateArtworkBodyOneMilestonesItemTitleMax = 200;
+
+export const generateArtworkBodyOneMilestonesItemTMinusMax = 40;
+
+export const generateArtworkBodyOneMilestonesMax = 8;
+
+export const generateArtworkBodyOneReferenceImageDataMin = 4;
+export const generateArtworkBodyOneReferenceImageDataMax = 2000000;
+
+
+export const generateArtworkBodyOneReferenceImageDataRegExp = new RegExp('^[A-Za-z0-9+/]+={0,2}$');
+export const generateArtworkBodyTwoWidthMin = 320;
+export const generateArtworkBodyTwoWidthMax = 5000;
+
+export const generateArtworkBodyTwoHeightMin = 320;
+export const generateArtworkBodyTwoHeightMax = 5000;
+
+
+
+export const GenerateArtworkBody = zod.object({
+  "goal": zod.string().min(1).max(generateArtworkBodyOneGoalMax),
+  "prompt": zod.string().max(generateArtworkBodyOnePromptMax),
+  "format": zod.enum(['phone', 'desktop', 'custom', 'cover']),
+  "milestones": zod.array(zod.object({
+  "title": zod.string().max(generateArtworkBodyOneMilestonesItemTitleMax),
+  "tMinus": zod.string().max(generateArtworkBodyOneMilestonesItemTMinusMax)
+})).max(generateArtworkBodyOneMilestonesMax),
+  "referenceImage": zod.object({
+  "mimeType": zod.enum(['image/jpeg', 'image/png', 'image/webp']),
+  "data": zod.string().min(generateArtworkBodyOneReferenceImageDataMin).max(generateArtworkBodyOneReferenceImageDataMax).regex(generateArtworkBodyOneReferenceImageDataRegExp)
+}).optional()
+}).and(zod.object({
+  "width": zod.number().int().min(generateArtworkBodyTwoWidthMin).max(generateArtworkBodyTwoWidthMax),
+  "height": zod.number().int().min(generateArtworkBodyTwoHeightMin).max(generateArtworkBodyTwoHeightMax)
+}))
+
+export const generateArtworkResponseObjectPathRegExp = new RegExp('^/api/artwork/[0-9a-f-]{36}\\.jpg$');
+
+
+export const GenerateArtworkResponse = zod.object({
+  "objectPath": zod.string().regex(generateArtworkResponseObjectPathRegExp),
+  "width": zod.number().int(),
+  "height": zod.number().int(),
+  "mimeType": zod.enum(['image/jpeg'])
+})
+
+
+/**
+ * @summary Read stored artwork using its unlisted capability URL
+ */
+export const GetArtworkParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetArtworkResponse = zod.unknown()
+
+
+/**
  * @summary Suggest three lock-screen styles from a brief and optional reference image
  */
 export const generateDesignSuggestionsBodyGoalMax = 120;

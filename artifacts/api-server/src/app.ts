@@ -27,7 +27,7 @@ app.use(
 );
 app.use(cors());
 // Only this route accepts a transient, resized reference image.
-app.use("/api/design-suggestions", express.json({ limit: "2100kb" }));
+app.use(["/api/design-suggestions", "/api/gemini/artwork"], express.json({ limit: "2100kb" }));
 const designBodyError: ErrorRequestHandler = (error, _req, res, next) => {
   if (error?.type === "entity.too.large") {
     res.status(413).json({ error: "The reference image is too large. Choose a smaller image." });
@@ -35,7 +35,7 @@ const designBodyError: ErrorRequestHandler = (error, _req, res, next) => {
     res.status(400).json({ error: "The style request was not valid JSON." });
   } else next(error);
 };
-app.use("/api/design-suggestions", designBodyError);
+app.use(["/api/design-suggestions", "/api/gemini/artwork"], designBodyError);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
